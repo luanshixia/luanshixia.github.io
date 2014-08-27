@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Stream</title>
+	<style>
+
+		body {
+			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+			margin: auto;
+			position: relative;
+			width: 960px;
+		}
+
+		.axis path, .axis line {
+			fill: none;
+			stroke: #000;
+			stroke-width: 2px;
+			shape-rendering: crispEdges;
+		}
+
+	</style>
+</head>
+<body>
+	<script type="text/javascript" src="js/d3.js"></script>
+	<script type="text/javascript">
+		var n = 8, // number of layers
+		    m = 48, // number of samples per layer
+		    stack = d3.layout.stack().offset("zero"), // also wiggle|expand|silhouette
+		    data = d3.range(n).map(function(n1) { return getDataOfLayer(n1, m); });
+		    layers = stack(data);
+
+	    var width = 960,
+	    	height = 500;
+
+	    var x = d3.scale.linear()
+	    .domain([0, m - 1])
+	    .range([0, width]);
+
+	    var y = d3.scale.linear()
+	    .domain([0, d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y0 + d.y; }); })])
+	    .range([height, 0]);
+
+	    var color = d3.scale.linear()
+	    .range(["#aad", "#556"]);
+
+	    var area = d3.svg.area()
+	    .x(function(d, i) { return x(i); })
+	    .y0(function(d) { return y(d.y0); })
+	    .y1(function(d) { return y(d.y0 + d.y); });
+
+	    var yAxis = d3.svg.axis()
+   		.scale(y);
+
+	    var svg = d3.select("body").append("svg")
+	    .attr("width", width)
+	    .attr("height", height);
+
+	    svg.selectAll("path")
+	    .data(layers)
+	    .enter().append("path")
+	    .attr("d", area)
+	    .style("fill", function() { return color(Math.random()); });
+
+	    svg.append("g")
+		.attr("class", "y axis")
+		.call(yAxis.orient("left"));
+
+	    setInterval(update, 1000);
+
+	    function update() {
+	    	data.forEach(function (layer, n1) {
+	    		var m1 = layer[layer.length - 1].x;
+	    		layer.push(getData(n1, m1 + 1));
+	    	});
+	    	layers = stack(data);
+
+	    	d3.selectAll("path")
+	    	.data(layers)
+	    	.attr("d", area)
+	    	.attr("transform", null)
+	    	.transition()
+	    	.ease("linear")
+	    	.duration(500)
+	    	.attr("transform", "translate(" + x(-1) + ")");
+
+	    	data.forEach(function (layer) {
+	    		layer.shift();
+	    	});
+	    }
+
+	    function getDataOfLayer(n1, ms) {
+	    	return d3.range(ms).map(function (m1, i) {
+	    		return getData(n1, m1);
+	    	});
+	    }
+
+	    function getData(n1, m1) {
+	    	return {
+    			x: m1,
+    			y: random(0.5, 1)//Math.abs(Math.sin(Math.PI / m * m1) * random(0.5, 1))
+    		};
+	    }
+
+	    function random(min, max) {
+	    	return min + (max - min) * Math.random();
+	    }
+	</script>
+</body>
+</html>

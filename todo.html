@@ -1,0 +1,143 @@
+﻿<!DOCTYPE html>
+<html ng-app="app">
+<head>
+    <title>Todo...</title>
+    <link href="css/bootstrap.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        body {
+            padding-top: 50px;
+        }
+
+        .starter-template {
+            padding: 40px 15px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        #todo-area {
+            text-align: left;
+        }
+
+        .badge-important {
+            background-color: orange;
+        }
+
+        .text-crossline{
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#"><b>TODO</b></a>
+            </div>
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+    </div>
+    <div class="container">
+        <div class="starter-template">
+            <h1>
+                Start right here...
+            </h1>
+            <p class="lead">
+                Type in one task below.
+            </p>
+            <div id="todo-area" ng-controller="Todo" ng-init="restore()">
+                <div class="panel input-group">
+                    <input class="form-control" type="text" ng-model="task.title" />
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" ng-click="addTodo()">Add</button>
+                    </span>
+                </div>
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <span>Todo List<span class="badge badge-important pull-right">{{todoList.length}}</span></span>
+                    </div>
+                    <ul class="list-group">
+                        <li class="list-group-item" ng-repeat="task in todoList track by task.id">
+                            <label>
+                                <input type="checkbox" ng-click="getDone(task)" />
+                                {{task.title}}
+                            </label>
+                            <span class="text-muted pull-right">{{task.createTime | date:'yyyy-MM-dd HH:mm:ss'}}</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <span>Done List<span class="badge pull-right">{{doneList.length}}</span></span>
+                    </div>
+                    <ul class="list-group">
+                        <li class="list-group-item" ng-repeat="task in doneList track by task.id">
+                            <label class="text-crossline">
+                                <input type="checkbox" ng-click="discard(task)" />
+                                {{task.title}}
+                            </label>
+                            <span class="text-muted pull-right">{{task.doneTime | date:'yyyy-MM-dd HH:mm:ss'}}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.container -->
+    <script type="text/javascript" src="js/angular.js"></script>
+    <script type="text/javascript">
+
+        var app = angular.module("app", []);
+        app.controller("Todo", function ($scope) {
+            $scope.stamp = 0;
+            $scope.task = {};
+            $scope.todoList = [];
+            $scope.doneList = [];
+            $scope.restore = function () {
+                $scope.stamp = parseInt(localStorage.getItem("stamp")) || 0;
+                $scope.todoList = JSON.parse(localStorage.getItem("todoList")) || [];
+                $scope.doneList = JSON.parse(localStorage.getItem("doneList")) || [];
+            };
+            $scope.save = function () {
+                localStorage.setItem("stamp", $scope.stamp.toString())
+                localStorage.setItem("todoList", JSON.stringify($scope.todoList));
+                localStorage.setItem("doneList", JSON.stringify($scope.doneList));
+            };
+            $scope.addTodo = function () {
+                if ($scope.task.title) {
+                    $scope.task.id = $scope.stamp;
+                    $scope.task.createTime = new Date();
+                    $scope.todoList.push($scope.task);
+                    $scope.task = {};
+                    $scope.stamp++;
+                    $scope.save();
+                }
+            };
+            $scope.getDone = function (task) {
+                var index = $scope.todoList.indexOf(task);
+                task.doneTime = new Date();
+                $scope.todoList.splice(index, 1);
+                $scope.doneList.push(task);
+                $scope.save();
+            };
+            $scope.discard = function (task) {
+                var index = $scope.doneList.indexOf(task);
+                $scope.doneList.splice(index, 1);
+                $scope.save();
+            };
+        });
+    </script>
+</body>
+</html>
