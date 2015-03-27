@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html ng-app="app">
+<head>
+    <title>Fast Read</title>
+    <link href="css/bootstrap.css" type="text/css" rel="stylesheet" />
+    <style type="text/css">
+
+    </style>
+</head>
+<body>
+    <div ng-controller="FastRead">
+        <textarea ng-model="text"></textarea>
+        <button ng-click="play()">Play</button>
+        <div>
+            <span>{{current}}</span>
+        </div>
+    </div>
+    <script type="text/javascript" src="js/angular.js"></script>
+    <script type="text/javascript">
+        var app = angular.module("app", []);
+        app.controller("FastRead", function ($scope, $interval) {
+            var arr = [], index = 0;
+            $scope.text = "";
+            $scope.rate = 240;
+            $scope.current = "";
+
+            $scope.split = function () {
+                arr = $scope.text.split(" ");
+            };
+
+            $scope.play = function () {
+                $scope.split();
+                index = 0;
+                $interval(function () {
+                    if (index < arr.length) {
+                        $scope.current = arr[index];
+                    }
+                    index++;
+                }, 60000 / $scope.rate);
+            };
+        });
+    </script>
+</body>
+</html>
