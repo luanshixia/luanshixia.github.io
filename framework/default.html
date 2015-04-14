@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>LUANSHIXIA</title>
+
+    <!-- ensure IE uses the latest version of IE (yes, yes...) -->
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- jQuery/Angular/Bootstrap -->
+    <script src="../js/jquery.js" type="text/javascript"></script>
+    <script src="../js/angular.js" type="text/javascript"></script>
+    <script src="../js/angular-route.js" type="text/javascript"></script>
+    <script src="../js/bootstrap.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap.css"/>
+
+    <!-- app scripts and styles -->
+    <script src="scripts/app.js" type="text/javascript"></script>
+    <script src="scripts/controllers/appCtrl.js" type="text/javascript"></script>
+    <link href="styles/app.css" rel="stylesheet" type="text/css" />
+</head>
+<body ng-app="app" ng-controller="appCtrl">
+
+    <div class="header">
+        <div class="container">
+            <h1>
+                <img src="resources/logo.png" /> LUANSHIXIA</h1>
+            <p>
+                Welcome to my site.</p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+
+            <!-- main menu -->
+            <div class="col-md-3">
+                <ng-include src="'partials/menu.html'">
+                </ng-include>
+            </div>
+
+            <!-- view -->
+            <div class="col-md-9">
+                <div ng-view></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
