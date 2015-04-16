@@ -1,4 +1,4 @@
-/// <reference path="../../js/angular.js" />
+/// <reference path="../js/angular.js" />
 
 angular.module("app", ["ngRoute", "ngSanitize"]).config(['$routeProvider', function ($routeProvider) {
     $routeProvider.when('/post/:id', {

@@ -13,18 +13,8 @@
             });
         };
 
-        //$scope.$watch(function () {
-        //    return location.hash
-        //}, function (value) {
-        //    $scope.loadPost(value.substring(1));
-        //});
-
         $scope.$on("$routeChangeSuccess", function () {
             $scope.loadPost($routeParams.id);
         });
-
-        if (location.hash) {
-            $scope.loadPost($routeParams.id);
-        }
     });
 })();
