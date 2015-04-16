@@ -12,6 +12,10 @@
             padding: 40px 15px;
             text-align: center;
         }
+
+        .content {
+            width: 640px;
+        }
     </style>
 </head>
 <body>
@@ -38,7 +42,7 @@
         </div>
     </div>
 
-    <div class="container" ng-controller="Blog">
+    <div class="container content">
 
         <div class="starter-template">
             <h1>luanshixia's Blog</h1>
@@ -50,24 +54,17 @@
             </p>
         </div>
 
-        <div ng-bind-html="content">
-
-        </div>
+        <div ng-view></div>
 
     </div><!-- /.container -->
 
     <script type="text/javascript" src="../js/jquery.js"></script>
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/angular.js"></script>
-    <script type="text/javascript" src="js/angular-sanitize.js"></script>
-    <script type="text/javascript" src="js/markdown.js"></script>
-    <script type="text/javascript" src="js/app-configs.js"></script>
-    <script type="text/javascript">
-        angular.module("app", ["ngSanitize"]).controller("Blog", function ($scope, $http) {
-            $http.get("post/welcome.md").success(function (result) {
-                $scope.content = markdown.toHTML(result);
-            });
-        });
-    </script>
+    <script type="text/javascript" src="../js/angular-route.js"></script>
+    <script type="text/javascript" src="../js/angular-sanitize.js"></script>
+    <script type="text/javascript" src="lib/markdown.js"></script>
+    <script type="text/javascript" src="app.js"></script>
+    <script type="text/javascript" src="controllers/PostController.js"></script>
 </body>
 </html>
