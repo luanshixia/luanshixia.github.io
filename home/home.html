@@ -51,9 +51,17 @@
 
         .card {
             width: 275px;
-            height: 275px;
+            height: 200px;
             margin: 10px;
-            border: 1px solid gray;
+            /* border: 1px solid gray; */
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            transition-property: transform;
+            transition-duration: 0.1s;
+            transition-timing-function: ease-out;
+        }
+
+        .card:hover {
+            transform: scale(1.02)
         }
     </style>
 </head>
