@@ -125,13 +125,23 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            document.querySelector('#button-add').addEventListener('click', function() {
-                document.querySelector('.header-mask-content').classList.add('active');
+            const buttonAdd = document.getElementById('button-add');
+            const buttonDone = document.getElementById('button-done');
+            const inputAddress = document.getElementById('input-address');
+            const headerMaskContent = document.querySelector('.header-mask-content');
+
+            buttonAdd.addEventListener('click', function() {
+                headerMaskContent.classList.add('active');
             });
 
-            document.querySelector('#button-done').addEventListener('click', function() {
-                document.querySelector('.header-mask-content').classList.remove('active');
-                document.querySelector('#input-address').focus();
+            buttonDone.addEventListener('click', function() {
+                headerMaskContent.classList.remove('active');
+            });
+
+            headerMaskContent.addEventListener('transitionend', function() {
+                if (headerMaskContent.classList.contains('active')) {
+                    inputAddress.focus();
+                }
             });
         });
     </script>
