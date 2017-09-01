@@ -61,16 +61,51 @@
         }
 
         .card:hover {
-            transform: scale(1.02)
+            transform: scale(1.02);
+        }
+
+        .header-mask {
+            height: 22px;
+            overflow: hidden;
+        }
+
+        .header-mask-content {
+            transition-property: transform;
+            transition-duration: 0.2s;
+            transition-timing-function: ease-out;
+        }
+
+        .header-mask-content.active {
+            transform: translateY(-23px);
+        }
+
+        .header-control {
+            cursor: pointer;
+        }
+
+        .header-title input[type=text] {
+            color: white;
+            background-color: transparent;
+            border: none;
+            border-bottom: 1px solid white;
+            width: 600px;
         }
     </style>
 </head>
 
 <body>
     <header class="top-header">
-        <div class="page-width horizontal-flex">
-            <span class="header-title"><i class="fa fa-home" aria-hidden="true"></i>HOME</span>
-            <span class="header-control"><i class="fa fa-plus" aria-hidden="true"></i></span>
+        <div class="page-width header-mask">
+            <div class="header-mask-content">
+                <div class="horizontal-flex">
+                    <span class="header-title"><i class="fa fa-home" aria-hidden="true"></i>HOME</span>
+                    <span class="header-control" id="button-add"><i class="fa fa-plus" aria-hidden="true" title="Add new item"></i></span>
+                </div>
+                <div class="horizontal-flex">
+                    <span class="header-title"><input type="text" placeholder="Type address here..." id="input-address"></span>
+                    <span class="header-control" id="button-done"><i class="fa fa-check" aria-hidden="true" title="Done"></i></span>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -89,8 +124,15 @@
     <footer class="bottom-footer"></footer>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // code...
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelector('#button-add').addEventListener('click', function() {
+                document.querySelector('.header-mask-content').classList.add('active');
+            });
+
+            document.querySelector('#button-done').addEventListener('click', function() {
+                document.querySelector('.header-mask-content').classList.remove('active');
+                document.querySelector('#input-address').focus();
+            });
         });
     </script>
 </body>
