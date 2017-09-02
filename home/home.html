@@ -43,6 +43,13 @@
             font-size: large;
             padding-top: 20px;
             padding-bottom: 20px;
+            transition-property: transform;
+            transition-duration: 0.5s;
+            transition-timing-function: ease-out;
+        }
+
+        .top-header.hidden {
+            transform: translateY(-65px);
         }
 
         .main-area {
@@ -94,7 +101,7 @@
 </head>
 
 <body>
-    <header class="top-header">
+    <header class="top-header" id="top-header">
         <div class="page-width header-mask">
             <div class="header-mask-content">
                 <div class="horizontal-flex">
@@ -110,7 +117,7 @@
     </header>
 
     <main class="main-area">
-        <div class="page-width wrap-flex">
+        <div id="card-list" class="page-width wrap-flex">
             <div class="card"></div>
             <div class="card"></div>
             <div class="card"></div>
@@ -124,23 +131,60 @@
     <footer class="bottom-footer"></footer>
 
     <script>
+        function createCard() {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            document.getElementById('card-list').appendChild(card);
+        }
+
+        // not in use
+        function onScroll() {
+            const scrollTop = document.body.scrollTop;
+            const topHeader = document.getElementById('top-header');
+            const inPoint = 300;
+            const outPoint = 800;
+
+            if (scrollTop > outPoint) {
+                topHeader.style.opacity = 0;
+            } else if (scrollTop < inPoint) {
+                topHeader.style.opacity = 1;
+            } else {
+                topHeader.style.opacity = (outPoint - scrollTop) / (outPoint - inPoint);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             const buttonAdd = document.getElementById('button-add');
             const buttonDone = document.getElementById('button-done');
             const inputAddress = document.getElementById('input-address');
             const headerMaskContent = document.querySelector('.header-mask-content');
 
-            buttonAdd.addEventListener('click', function() {
+            buttonAdd.addEventListener('click', function () {
                 headerMaskContent.classList.add('active');
             });
 
-            buttonDone.addEventListener('click', function() {
+            buttonDone.addEventListener('click', function () {
                 headerMaskContent.classList.remove('active');
             });
 
-            headerMaskContent.addEventListener('transitionend', function() {
+            headerMaskContent.addEventListener('transitionend', function () {
                 if (headerMaskContent.classList.contains('active')) {
                     inputAddress.focus();
+                }
+            });
+
+            [...Array(50).keys()].forEach(i => createCard());
+
+            window.addEventListener('scroll', function () {
+                const scrollTop = document.body.scrollTop;
+                const topHeader = document.getElementById('top-header');
+                const inPoint = 400;
+                const outPoint = 400;
+
+                if (scrollTop > outPoint) {
+                    topHeader.classList.add('hidden');
+                } else if (scrollTop < inPoint) {
+                    topHeader.classList.remove('hidden');
                 }
             });
         });
