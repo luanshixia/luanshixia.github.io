@@ -1,66 +1,69 @@
 <!DOCTYPE html>
 <html ng-app="app">
+
 <head>
-	<title>Palette</title>
-	<link rel="stylesheet" type="text/css" href="css/bootstrap.css">
-	<style type="text/css">
-	</style>
+  <title>Palette</title>
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+  <style type="text/css">
+  </style>
 </head>
+
 <body>
 
-	<div class="container">
-		<div class="row">
-			<div class="col-md-4" ng-controller="Palette">
-				<div style="height: 100px; background-color: {{color}}">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4" ng-controller="Palette">
+        <div style="height: 100px; background-color: {{color}}">
 
-				</div>
-				<div class="form-group">
-					<label for="red">Red</label>
-					<input id="red" class="form-control" type="text" ng-model="red" ng-blur="update()" min="0" max="255" step="1" />
-				</div>
-				<div class="form-group">
-					<label for="green">Green</label>
-					<input id="green" class="form-control" type="text" ng-model="green" ng-blur="update()" min="0" max="255" step="1" />
-				</div>
-				<div class="form-group">
-					<label for="blue">Blue</label>
-					<input id="blue" class="form-control" type="text" ng-model="blue" ng-blur="update()" min="0" max="255" step="1" />
-				</div>
-				<div class="form-group">
-					<label for="alpha">Alpha</label>
-					<input id="alpha" class="form-control" type="text" ng-model="alpha" ng-blur="update()" min="0" max="1" step="0.01" />
-				</div>
-			</div>
-		</div>
-	</div>
+        </div>
+        <div class="form-group">
+          <label for="red">Red</label>
+          <input id="red" class="form-control" type="text" ng-model="red" ng-blur="update()" min="0" max="255" step="1" />
+        </div>
+        <div class="form-group">
+          <label for="green">Green</label>
+          <input id="green" class="form-control" type="text" ng-model="green" ng-blur="update()" min="0" max="255" step="1" />
+        </div>
+        <div class="form-group">
+          <label for="blue">Blue</label>
+          <input id="blue" class="form-control" type="text" ng-model="blue" ng-blur="update()" min="0" max="255" step="1" />
+        </div>
+        <div class="form-group">
+          <label for="alpha">Alpha</label>
+          <input id="alpha" class="form-control" type="text" ng-model="alpha" ng-blur="update()" min="0" max="1" step="0.01" />
+        </div>
+      </div>
+    </div>
+  </div>
 
-	<script type="text/javascript" src="js/angular.js"></script>
-	<script type="text/javascript">
-		
-		(function () {
-			if (!String.format) {
-				String.format = function (format) {
-					var args = Array.prototype.slice.call(arguments, 1);
-					return format.replace(/{(\d+)}/g, function (match, number) {
-						return typeof args[number] != 'undefined'
-						? args[number]
-						: match;
-					});
-				};
-			}
-		})();
+  <script type="text/javascript" src="js/angular.js"></script>
+  <script type="text/javascript">
 
-		var app = angular.module("app", []);
-		app.controller("Palette", function ($scope) {
-			$scope.alpha = 1.0;
-			$scope.red = 0;
-			$scope.green = 0;
-			$scope.blue = 0;
-			$scope.color = "rgba(0,0,0,1.0)";
-			$scope.update = function () {
-				$scope.color = String.format("rgba({0},{1},{2},{3})", $scope.red, $scope.green, $scope.blue, $scope.alpha);
-			};
-		});
-	</script>
+    (function () {
+      if (!String.format) {
+        String.format = function (format) {
+          var args = Array.prototype.slice.call(arguments, 1);
+          return format.replace(/{(\d+)}/g, function (match, number) {
+            return typeof args[number] != 'undefined'
+              ? args[number]
+              : match;
+          });
+        };
+      }
+    })();
+
+    var app = angular.module("app", []);
+    app.controller("Palette", function ($scope) {
+      $scope.alpha = 1.0;
+      $scope.red = 0;
+      $scope.green = 0;
+      $scope.blue = 0;
+      $scope.color = "rgba(0,0,0,1.0)";
+      $scope.update = function () {
+        $scope.color = String.format("rgba({0},{1},{2},{3})", $scope.red, $scope.green, $scope.blue, $scope.alpha);
+      };
+    });
+  </script>
 </body>
+
 </html>

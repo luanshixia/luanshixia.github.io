@@ -1,194 +1,201 @@
 <html>
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>HOME</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <style>
-        body {
-            font-family: sans-serif;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>HOME</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    body {
+      font-family: sans-serif;
+    }
 
-        .page-width {
-            max-width: 1200px;
-            left: 0;
-            right: 0;
-            margin-left: auto;
-            margin-right: auto;
-            padding-left: 20px;
-            padding-right: 20px;
-        }
+    .page-width {
+      max-width: 1200px;
+      left: 0;
+      right: 0;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
 
-        .horizontal-flex {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-        }
+    .horizontal-flex {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
 
-        .wrap-flex {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-        }
+    .wrap-flex {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
 
-        .top-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: black;
-            color: white;
-            font-size: large;
-            padding-top: 20px;
-            padding-bottom: 20px;
-            transition-property: transform;
-            transition-duration: 0.5s;
-            transition-timing-function: ease-out;
-        }
+    .top-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: black;
+      color: white;
+      font-size: large;
+      padding-top: 20px;
+      padding-bottom: 20px;
+      transition-property: transform;
+      transition-duration: 0.5s;
+      transition-timing-function: ease-out;
+    }
 
-        .top-header.hidden {
-            transform: translateY(-65px);
-        }
+    .top-header.hidden {
+      transform: translateY(-65px);
+    }
 
-        .main-area {
-            margin-top: 70px;
-        }
+    .main-area {
+      margin-top: 70px;
+    }
 
-        .card {
-            width: 275px;
-            height: 200px;
-            margin: 10px;
-            /* border: 1px solid gray; */
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-            transition-property: transform;
-            transition-duration: 0.1s;
-            transition-timing-function: ease-out;
-        }
+    .card {
+      width: 275px;
+      height: 200px;
+      margin: 10px;
+      /* border: 1px solid gray; */
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      transition-property: transform;
+      transition-duration: 0.1s;
+      transition-timing-function: ease-out;
+    }
 
-        .card:hover {
-            transform: scale(1.02);
-        }
+    .card:hover {
+      transform: scale(1.02);
+    }
 
-        .header-mask {
-            height: 22px;
-            overflow: hidden;
-        }
+    .header-mask {
+      height: 22px;
+      overflow: hidden;
+    }
 
-        .header-mask-content {
-            transition-property: transform;
-            transition-duration: 0.2s;
-            transition-timing-function: ease-out;
-        }
+    .header-mask-content {
+      transition-property: transform;
+      transition-duration: 0.2s;
+      transition-timing-function: ease-out;
+    }
 
-        .header-mask-content.active {
-            transform: translateY(-23px);
-        }
+    .header-mask-content.active {
+      transform: translateY(-23px);
+    }
 
-        .header-control {
-            cursor: pointer;
-        }
+    .header-control {
+      cursor: pointer;
+    }
 
-        .header-title input[type=text] {
-            color: white;
-            background-color: transparent;
-            border: none;
-            border-bottom: 1px solid white;
-            width: 600px;
-        }
-    </style>
+    .header-title input[type=text] {
+      color: white;
+      background-color: transparent;
+      border: none;
+      border-bottom: 1px solid white;
+      width: 600px;
+    }
+  </style>
 </head>
 
 <body>
-    <header class="top-header" id="top-header">
-        <div class="page-width header-mask">
-            <div class="header-mask-content">
-                <div class="horizontal-flex">
-                    <span class="header-title"><i class="fa fa-home" aria-hidden="true"></i>HOME</span>
-                    <span class="header-control" id="button-add"><i class="fa fa-plus" aria-hidden="true" title="Add new item"></i></span>
-                </div>
-                <div class="horizontal-flex">
-                    <span class="header-title"><input type="text" placeholder="Type address here..." id="input-address"></span>
-                    <span class="header-control" id="button-done"><i class="fa fa-check" aria-hidden="true" title="Done"></i></span>
-                </div>
-            </div>
+  <header class="top-header" id="top-header">
+    <div class="page-width header-mask">
+      <div class="header-mask-content">
+        <div class="horizontal-flex">
+          <span class="header-title">
+            <i class="fa fa-home" aria-hidden="true"></i>HOME</span>
+          <span class="header-control" id="button-add">
+            <i class="fa fa-plus" aria-hidden="true" title="Add new item"></i>
+          </span>
         </div>
-    </header>
-
-    <main class="main-area">
-        <div id="card-list" class="page-width wrap-flex">
-            <div class="card"></div>
-            <div class="card"></div>
-            <div class="card"></div>
-            <div class="card"></div>
-            <div class="card"></div>
-            <div class="card"></div>
-            <div class="card"></div>
+        <div class="horizontal-flex">
+          <span class="header-title">
+            <input type="text" placeholder="Type address here..." id="input-address">
+          </span>
+          <span class="header-control" id="button-done">
+            <i class="fa fa-check" aria-hidden="true" title="Done"></i>
+          </span>
         </div>
-    </main>
+      </div>
+    </div>
+  </header>
 
-    <footer class="bottom-footer"></footer>
+  <main class="main-area">
+    <div id="card-list" class="page-width wrap-flex">
+      <div class="card"></div>
+      <div class="card"></div>
+      <div class="card"></div>
+      <div class="card"></div>
+      <div class="card"></div>
+      <div class="card"></div>
+      <div class="card"></div>
+    </div>
+  </main>
 
-    <script>
-        function createCard() {
-            const card = document.createElement('div');
-            card.classList.add('card');
-            document.getElementById('card-list').appendChild(card);
+  <footer class="bottom-footer"></footer>
+
+  <script>
+    function createCard() {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      document.getElementById('card-list').appendChild(card);
+    }
+
+    // not in use
+    function onScroll() {
+      const scrollTop = document.body.scrollTop;
+      const topHeader = document.getElementById('top-header');
+      const inPoint = 300;
+      const outPoint = 800;
+
+      if (scrollTop > outPoint) {
+        topHeader.style.opacity = 0;
+      } else if (scrollTop < inPoint) {
+        topHeader.style.opacity = 1;
+      } else {
+        topHeader.style.opacity = (outPoint - scrollTop) / (outPoint - inPoint);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const buttonAdd = document.getElementById('button-add');
+      const buttonDone = document.getElementById('button-done');
+      const inputAddress = document.getElementById('input-address');
+      const headerMaskContent = document.querySelector('.header-mask-content');
+
+      buttonAdd.addEventListener('click', function () {
+        headerMaskContent.classList.add('active');
+      });
+
+      buttonDone.addEventListener('click', function () {
+        headerMaskContent.classList.remove('active');
+      });
+
+      headerMaskContent.addEventListener('transitionend', function () {
+        if (headerMaskContent.classList.contains('active')) {
+          inputAddress.focus();
         }
+      });
 
-        // not in use
-        function onScroll() {
-            const scrollTop = document.body.scrollTop;
-            const topHeader = document.getElementById('top-header');
-            const inPoint = 300;
-            const outPoint = 800;
+      [...Array(50).keys()].forEach(i => createCard());
 
-            if (scrollTop > outPoint) {
-                topHeader.style.opacity = 0;
-            } else if (scrollTop < inPoint) {
-                topHeader.style.opacity = 1;
-            } else {
-                topHeader.style.opacity = (outPoint - scrollTop) / (outPoint - inPoint);
-            }
+      window.addEventListener('scroll', function () {
+        const scrollTop = document.body.scrollTop;
+        const topHeader = document.getElementById('top-header');
+        const inPoint = 400;
+        const outPoint = 400;
+
+        if (scrollTop > outPoint) {
+          topHeader.classList.add('hidden');
+        } else if (scrollTop < inPoint) {
+          topHeader.classList.remove('hidden');
         }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const buttonAdd = document.getElementById('button-add');
-            const buttonDone = document.getElementById('button-done');
-            const inputAddress = document.getElementById('input-address');
-            const headerMaskContent = document.querySelector('.header-mask-content');
-
-            buttonAdd.addEventListener('click', function () {
-                headerMaskContent.classList.add('active');
-            });
-
-            buttonDone.addEventListener('click', function () {
-                headerMaskContent.classList.remove('active');
-            });
-
-            headerMaskContent.addEventListener('transitionend', function () {
-                if (headerMaskContent.classList.contains('active')) {
-                    inputAddress.focus();
-                }
-            });
-
-            [...Array(50).keys()].forEach(i => createCard());
-
-            window.addEventListener('scroll', function () {
-                const scrollTop = document.body.scrollTop;
-                const topHeader = document.getElementById('top-header');
-                const inPoint = 400;
-                const outPoint = 400;
-
-                if (scrollTop > outPoint) {
-                    topHeader.classList.add('hidden');
-                } else if (scrollTop < inPoint) {
-                    topHeader.classList.remove('hidden');
-                }
-            });
-        });
-    </script>
+      });
+    });
+  </script>
 </body>
 
 </html>

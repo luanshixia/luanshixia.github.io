@@ -1,88 +1,87 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-	<title>Flip</title>
-	<style type="text/css">
-		.card {
+  <title>Flip</title>
+  <style type="text/css">
+    .card {}
 
-		}
-
-		.desk {
-			
-		}
-	</style>
+    .desk {}
+  </style>
 </head>
+
 <body>
 
-	<script type="text/javascript" src="js/jquery.js"></script>
-	<script type="text/javascript">
+  <script type="text/javascript" src="js/jquery.js"></script>
+  <script type="text/javascript">
 
-		//+ Jonas Raoni Soares Silva
-		//@ http://jsfromhell.com/array/shuffle [v1.0]
-		function shuffle(o) { //v1.0
-		    for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
-		    return o;
-		};
+    //+ Jonas Raoni Soares Silva
+    //@ http://jsfromhell.com/array/shuffle [v1.0]
+    function shuffle(o) { //v1.0
+      for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+      return o;
+    };
 
-		var Card = (function () {
+    var Card = (function () {
 
-			var cardClass = "card",
-				cardElement,
-				backContent = "*",
-				timeout = 0;
+      var cardClass = "card",
+        cardElement,
+        backContent = "*",
+        timeout = 0;
 
-			function Card(content, desk) {
-				this.content = content;
-				this.front = false;
-				this.desk = desk;
-			}
+      function Card(content, desk) {
+        this.content = content;
+        this.front = false;
+        this.desk = desk;
+      }
 
-			Card.prototype.create = function (selector) {
-				cardElement = $("<div>").html(backContent).addClass(cardClass).data("card", this).appendTo(selector);
-			};
+      Card.prototype.create = function (selector) {
+        cardElement = $("<div>").html(backContent).addClass(cardClass).data("card", this).appendTo(selector);
+      };
 
-			Card.prototype.flip = function () {
-				var that = this;
-				clearTimeout(timeout);
-				this.front = !this.front;
-				if (this.front) {
-					cardElement.html(this.content);
-					this.desk.check();
-					timeout = setTimeout(function() {
-						that.flip();
-					}, 2000);
-				} else {
-					cardElement.html(backContent);
-				}
-			};
+      Card.prototype.flip = function () {
+        var that = this;
+        clearTimeout(timeout);
+        this.front = !this.front;
+        if (this.front) {
+          cardElement.html(this.content);
+          this.desk.check();
+          timeout = setTimeout(function () {
+            that.flip();
+          }, 2000);
+        } else {
+          cardElement.html(backContent);
+        }
+      };
 
-			return Card;
-		})();
+      return Card;
+    })();
 
-		var CardDesk = (function () {
+    var CardDesk = (function () {
 
-			var cardDeskClass = "desk";
+      var cardDeskClass = "desk";
 
-			function CardDesk(m, n) {
-				this.m = m;
-				this.n = n;
-			}
+      function CardDesk(m, n) {
+        this.m = m;
+        this.n = n;
+      }
 
-			CardDesk.prototype.init = function (selector) {
-				for (var i = 0; i < m; i++) {
-					var row = $("<div>").appendTo(selector);
-					for (var j = 0; j < n; j++) {
+      CardDesk.prototype.init = function (selector) {
+        for (var i = 0; i < m; i++) {
+          var row = $("<div>").appendTo(selector);
+          for (var j = 0; j < n; j++) {
 
-					}
-				}
-			};
+          }
+        }
+      };
 
-			CardDesk.prototype.check = function () {
+      CardDesk.prototype.check = function () {
 
-			};
+      };
 
-			return CardDesk;
-		})();
-	</script>
+      return CardDesk;
+    })();
+  </script>
 </body>
+
 </html>

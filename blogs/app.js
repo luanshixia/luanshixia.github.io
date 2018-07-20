@@ -1,4 +1,4 @@
-/// <reference path="../js/angular.js" />
+/// <reference path="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.2/angular.js" />
 
 angular.module("app", ["ngRoute", "ngSanitize"]).config(['$routeProvider', function ($routeProvider) {
     $routeProvider.when('/post/:id', {

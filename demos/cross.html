@@ -1,26 +1,29 @@
 <!DOCTYPE html>
 <html ng-app="app">
-<head>
-	<title>Cross</title>	
-</head>
-<body ng-controller="Output">
-	<p ng-bind-html="text">
 
-	</p>
-	<script type="text/javascript" src="js/extensions.js"></script>
-	<script type="text/javascript" src="js/angular.js"></script>
-	<script type="text/javascript">
-		var app = angular.module("app", []);
-		app.controller("Output", function ($scope, $sce) {
-			var arrs = [ [ "Bob", "John", "Sam" ], [ " is eating", " is reading", " is sleeping" ], [ " in the kitchen.", " in the bathroom.", " in the classroom." ] ],
-				strs = arrs.reduce(function (arr1, arr2) {
-					return arr1.cross(arr2, function (str1, str2) {
-						return str1 + str2;
-					});
-				});
-				
-			$scope.text = $sce.trustAsHtml(strs.join("<br/>"));
-		});
-	</script>
+<head>
+  <title>Cross</title>
+</head>
+
+<body ng-controller="Output">
+  <p ng-bind-html="text">
+
+  </p>
+  <script type="text/javascript" src="js/extensions.js"></script>
+  <script type="text/javascript" src="js/angular.js"></script>
+  <script type="text/javascript">
+    var app = angular.module("app", []);
+    app.controller("Output", function ($scope, $sce) {
+      var arrs = [["Bob", "John", "Sam"], [" is eating", " is reading", " is sleeping"], [" in the kitchen.", " in the bathroom.", " in the classroom."]],
+        strs = arrs.reduce(function (arr1, arr2) {
+          return arr1.cross(arr2, function (str1, str2) {
+            return str1 + str2;
+          });
+        });
+
+      $scope.text = $sce.trustAsHtml(strs.join("<br/>"));
+    });
+  </script>
 </body>
+
 </html>

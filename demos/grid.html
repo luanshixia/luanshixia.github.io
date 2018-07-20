@@ -1,78 +1,81 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-	<title>Grid</title>
-	<style type="text/css">
-		#theGrid {
-			position: absolute;
-			top: 200px;
-			left: 300px;
-			width: 640px;
-			height: 480px;
-		}
+  <title>Grid</title>
+  <style type="text/css">
+    #theGrid {
+      position: absolute;
+      top: 200px;
+      left: 300px;
+      width: 640px;
+      height: 480px;
+    }
 
-		svg {
-			opacity: 0.5;
-		}
-	</style>
+    svg {
+      opacity: 0.5;
+    }
+  </style>
 </head>
+
 <body>
-	<img src="images/sh_railway_station.jpg" />
-	<div id="theGrid"></div>
-	<script type="text/javascript" src="js/d3.js"></script>
-	<script type="text/javascript">
-		var w = 640,
-			h = 480,
-			z = 20,
-			x = w / z,
-			y = h / z;
+  <img src="images/sh_railway_station.jpg" />
+  <div id="theGrid"></div>
+  <script type="text/javascript" src="js/d3.js"></script>
+  <script type="text/javascript">
+    var w = 640,
+      h = 480,
+      z = 20,
+      x = w / z,
+      y = h / z;
 
-		var svg = d3.select("#theGrid").append("svg")
-		.attr("width", w)
-		.attr("height", h);
+    var svg = d3.select("#theGrid").append("svg")
+      .attr("width", w)
+      .attr("height", h);
 
-		svg.selectAll("rect")
-		.data(d3.range(x * y))
-		.enter().append("rect")
-		.attr("transform", translate)
-		.attr("width", z)
-		.attr("height", z)
-		//.style("fill", function(d) { return d3.hsl(d % x / x * 360, 1, Math.floor(d / x) / y); });
-		.style("fill", getFill);
+    svg.selectAll("rect")
+      .data(d3.range(x * y))
+      .enter().append("rect")
+      .attr("transform", translate)
+      .attr("width", z)
+      .attr("height", z)
+      //.style("fill", function(d) { return d3.hsl(d % x / x * 360, 1, Math.floor(d / x) / y); });
+      .style("fill", getFill);
 
-		setInterval(function () {
-			svg.selectAll("rect")
-			.style("fill", getFill);
-		}, 500);
+    setInterval(function () {
+      svg.selectAll("rect")
+        .style("fill", getFill);
+    }, 500);
 
-		function getFill(d) {
-			var v = getValue(d), v1 = 0, v2 = 1.25;
-			var r1 = 192, g1 = 192, b1 = 192, r2 = 255, g2 = 0, b2 = 0;
-			return d3.rgb(lerp(r1, r2, v1, v2, v), lerp(g1, g2, v1, v2, v), lerp(b1, b2, v1, v2, v)); 
-		}
+    function getFill(d) {
+      var v = getValue(d), v1 = 0, v2 = 1.25;
+      var r1 = 192, g1 = 192, b1 = 192, r2 = 255, g2 = 0, b2 = 0;
+      return d3.rgb(lerp(r1, r2, v1, v2, v), lerp(g1, g2, v1, v2, v), lerp(b1, b2, v1, v2, v));
+    }
 
-		function lerp(n1, n2, m1, m2, m) {
-			return n1 + (n2 - n1) * (m - m1) / (m2 - m1);
-		}
+    function lerp(n1, n2, m1, m2, m) {
+      return n1 + (n2 - n1) * (m - m1) / (m2 - m1);
+    }
 
-		function translate(d) {
-			return "translate(" + (d % x) * z + "," + Math.floor(d / x) * z + ")";
-		}
+    function translate(d) {
+      return "translate(" + (d % x) * z + "," + Math.floor(d / x) * z + ")";
+    }
 
-		function getValue(d) {
-			var p1 = 1, p2 = 0.25;
-			var dist = ezDist(d, x/2, y/2);
-			var value = 1 - 2 * dist / x;
-			return p1 * value + p2 * Math.random();
-		}
+    function getValue(d) {
+      var p1 = 1, p2 = 0.25;
+      var dist = ezDist(d, x / 2, y / 2);
+      var value = 1 - 2 * dist / x;
+      return p1 * value + p2 * Math.random();
+    }
 
-		function ezDist(d, x0, y0) {
-			var xx = d % x;
-			var yy = Math.floor(d / x);
-			var dx = xx - x0;
-			var dy = yy - y0;
-			return Math.sqrt(dx * dx + dy * dy);
-		}
-	</script>
+    function ezDist(d, x0, y0) {
+      var xx = d % x;
+      var yy = Math.floor(d / x);
+      var dx = xx - x0;
+      var dy = yy - y0;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+  </script>
 </body>
+
 </html>

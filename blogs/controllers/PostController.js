@@ -1,4 +1,5 @@
-/// <reference path="../../js/angular.js" />
+/// <reference path="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.2/angular.js" />
+
 (function () {
     "use strict";
 
