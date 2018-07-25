@@ -4,10 +4,12 @@
   "description": "Personal site of luanshixia",
   "author": "luanshixia",
   "devDependencies": {
+    "http-server": "0.11.1",
     "typescript": "2.7.1",
     "webpack": "3.10.0"
   },
   "scripts": {
-    "tsc": "tsc --target ES5 --module UMD"
+    "start": "http-server",
+    "tsc": "tsc --target ES2015 --module ES2015"
   }
 }
