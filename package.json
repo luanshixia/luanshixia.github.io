@@ -8,6 +8,6 @@
     "webpack": "3.10.0"
   },
   "scripts": {
-    "tsc": "tsc"
+    "tsc": "tsc --target ES5 --module UMD"
   }
 }

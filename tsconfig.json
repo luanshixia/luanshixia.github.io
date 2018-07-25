@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "module": "es2015",
-    "moduleResolution": "node",
+    //"module": "es2015",
+    //"moduleResolution": "node",
     "target": "es5",
-    "jsx": "react",
-    "rootDir": "src",
+    //"jsx": "react",
+    "rootDir": "js",
     "outDir": "build/dist",
     "experimentalDecorators": true,
     "sourceMap": true,
     "skipDefaultLibCheck": true,
-    "allowJs": true,
+    //"allowJs": true,
     "strict": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -20,9 +20,9 @@
       "es2016",
       "dom"
     ],
-    "types": [
-      "webpack-env"
-    ]
+    // "types": [
+    //   "webpack-env"
+    // ]
   },
   "exclude": [
     "bin",

@@ -39,3 +39,6 @@ Icon
 # npm & bower
 node_modules
 bower_components
+
+# build artifacts
+build
