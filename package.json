@@ -1,0 +1,13 @@
+{
+  "name": "luanshixia.github.io",
+  "version": "0.1.0",
+  "description": "Personal site of luanshixia",
+  "author": "luanshixia",
+  "devDependencies": {
+    "typescript": "2.7.1",
+    "webpack": "3.10.0"
+  },
+  "scripts": {
+    "tsc": "tsc"
+  }
+}
