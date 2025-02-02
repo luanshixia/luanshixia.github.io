@@ -122,43 +122,28 @@
                 </div>
               </div>
 
-              <div className="grid grid-cols-11 gap-1">
-                {/* Header row with column numbers */}
-                <div className="font-bold text-center">×</div>
-                {[...Array(10)].map((_, i) => (
-                  <div key={`col-${i + 1}`} className="font-bold text-center">
-                    {i + 1}
-                  </div>
-                ))}
-
-                {/* Grid with row numbers and products */}
-                {[...Array(10)].map((_, row) => (
-                  <React.Fragment key={`row-${row + 1}`}>
-                    {/* Row number */}
-                    <div className="font-bold text-center">{row + 1}</div>
-
-                    {/* Products */}
-                    {[...Array(10)].map((_, col) => {
-                      const value = (row + 1) * (col + 1);
-                      return (
-                        <button
-                          key={`cell-${row}-${col}`}
-                          onClick={() => handleAnswer(value)}
-                          className={`aspect-square flex items-center justify-center text-sm font-medium
-                            border rounded ${getCellColor(
-                              value
-                            )} transition-colors
-                            ${
-                              showHint ? "cursor-not-allowed" : "cursor-pointer"
-                            }`}
-                          disabled={showHint}
-                        >
-                          {value}
-                        </button>
-                      );
-                    })}
-                  </React.Fragment>
-                ))}
+              <div className="grid grid-cols-10 gap-1">
+                {[...Array(10)].map((_, row) =>
+                  [...Array(10)].map((_, col) => {
+                    const value = (row + 1) * (col + 1);
+                    return (
+                      <button
+                        key={`cell-${row}-${col}`}
+                        onClick={() => handleAnswer(value)}
+                        className={`aspect-square flex items-center justify-center text-sm font-medium
+                          border rounded ${getCellColor(
+                            value
+                          )} transition-colors
+                          ${
+                            showHint ? "cursor-not-allowed" : "cursor-pointer"
+                          }`}
+                        disabled={showHint}
+                      >
+                        {value}
+                      </button>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
