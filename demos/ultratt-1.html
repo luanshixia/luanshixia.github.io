@@ -3,13 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Multiplication Quiz</title>
-    <!-- React and ReactDOM -->
+    <title>Times Table Grid Quiz</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    <!-- Babel for JSX transformation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       body {
@@ -24,7 +21,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-      const MultiplicationQuiz = () => {
+      const TimesTableQuiz = () => {
         const [num1, setNum1] = React.useState(0);
         const [num2, setNum2] = React.useState(0);
         const [attempts, setAttempts] = React.useState(0);
@@ -41,8 +38,8 @@
         const HINT_DURATION = 1000;
 
         const generateNewQuestion = () => {
-          setNum1(Math.floor(Math.random() * 9) + 1);
-          setNum2(Math.floor(Math.random() * 9) + 1);
+          setNum1(Math.floor(Math.random() * 10) + 1);
+          setNum2(Math.floor(Math.random() * 10) + 1);
           setAttempts(0);
           setShowHint(false);
           setSelectedCell(null);
@@ -53,12 +50,12 @@
           generateNewQuestion();
         }, []);
 
-        const handleAnswer = (number) => {
+        const handleAnswer = (answer) => {
           if (showHint) return;
 
-          setSelectedCell(number);
+          setSelectedCell(answer);
           const correctAnswer = num1 * num2;
-          const isAnswerCorrect = number === correctAnswer;
+          const isAnswerCorrect = answer === correctAnswer;
           setIsCorrect(isAnswerCorrect);
 
           if (isAnswerCorrect) {
@@ -82,11 +79,11 @@
           }
         };
 
-        const getCellColor = (number) => {
-          if (number === selectedCell) {
+        const getCellColor = (value) => {
+          if (value === selectedCell) {
             return isCorrect ? "bg-green-500" : "bg-red-500";
           }
-          if (showHint && number === num1 * num2) {
+          if (showHint && value === num1 * num2) {
             return "bg-yellow-500";
           }
           return "bg-white hover:bg-gray-100";
@@ -125,18 +122,42 @@
                 </div>
               </div>
 
-              <div className="grid grid-cols-10 gap-1">
-                {[...Array(100)].map((_, i) => (
-                  <button
-                    key={i + 1}
-                    onClick={() => handleAnswer(i + 1)}
-                    className={`aspect-square flex items-center justify-center text-sm font-medium
-                      border rounded ${getCellColor(i + 1)} transition-colors
-                      ${showHint ? "cursor-not-allowed" : "cursor-pointer"}`}
-                    disabled={showHint}
-                  >
+              <div className="grid grid-cols-11 gap-1">
+                {/* Header row with column numbers */}
+                <div className="font-bold text-center">×</div>
+                {[...Array(10)].map((_, i) => (
+                  <div key={`col-${i + 1}`} className="font-bold text-center">
                     {i + 1}
-                  </button>
+                  </div>
+                ))}
+
+                {/* Grid with row numbers and products */}
+                {[...Array(10)].map((_, row) => (
+                  <React.Fragment key={`row-${row + 1}`}>
+                    {/* Row number */}
+                    <div className="font-bold text-center">{row + 1}</div>
+
+                    {/* Products */}
+                    {[...Array(10)].map((_, col) => {
+                      const value = (row + 1) * (col + 1);
+                      return (
+                        <button
+                          key={`cell-${row}-${col}`}
+                          onClick={() => handleAnswer(value)}
+                          className={`aspect-square flex items-center justify-center text-sm font-medium
+                            border rounded ${getCellColor(
+                              value
+                            )} transition-colors
+                            ${
+                              showHint ? "cursor-not-allowed" : "cursor-pointer"
+                            }`}
+                          disabled={showHint}
+                        >
+                          {value}
+                        </button>
+                      );
+                    })}
+                  </React.Fragment>
                 ))}
               </div>
             </div>
@@ -145,7 +166,7 @@
       };
 
       const root = ReactDOM.createRoot(document.getElementById("root"));
-      root.render(<MultiplicationQuiz />);
+      root.render(<TimesTableQuiz />);
     </script>
   </body>
 </html>
