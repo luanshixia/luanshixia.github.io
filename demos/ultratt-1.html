@@ -70,6 +70,12 @@
             setAttempts(newAttempts);
 
             if (newAttempts >= MAX_ATTEMPTS) {
+              // Update stats when max attempts reached (question is wrong)
+              setStats((prev) => ({
+                totalQuestions: prev.totalQuestions + 1,
+                totalAttempts: prev.totalAttempts + MAX_ATTEMPTS,
+                correctAnswers: prev.correctAnswers,
+              }));
               setShowHint(true);
               setTimeout(() => {
                 setShowHint(false);
@@ -87,6 +93,11 @@
             return "bg-yellow-500";
           }
           return "bg-white hover:bg-gray-100";
+        };
+
+        const calculateAccuracy = () => {
+          if (stats.totalQuestions === 0) return 0;
+          return (stats.correctAnswers / stats.totalQuestions) * 100;
         };
 
         return (
@@ -108,16 +119,7 @@
                     </span>
                   </div>
                   <div className="flex items-center">
-                    <span>
-                      Accuracy:{" "}
-                      {stats.totalQuestions
-                        ? (
-                            (stats.correctAnswers / stats.totalQuestions) *
-                            100
-                          ).toFixed(1)
-                        : 0}
-                      %
-                    </span>
+                    <span>Accuracy: {calculateAccuracy().toFixed(1)}%</span>
                   </div>
                 </div>
               </div>
