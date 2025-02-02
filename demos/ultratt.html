@@ -4,12 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Multiplication Quiz</title>
-    <!-- React and ReactDOM -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    <!-- Babel for JSX transformation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       body {
@@ -73,6 +70,12 @@
             setAttempts(newAttempts);
 
             if (newAttempts >= MAX_ATTEMPTS) {
+              // Update stats when max attempts reached (question is wrong)
+              setStats((prev) => ({
+                totalQuestions: prev.totalQuestions + 1,
+                totalAttempts: prev.totalAttempts + MAX_ATTEMPTS,
+                correctAnswers: prev.correctAnswers,
+              }));
               setShowHint(true);
               setTimeout(() => {
                 setShowHint(false);
@@ -90,6 +93,11 @@
             return "bg-yellow-500";
           }
           return "bg-white hover:bg-gray-100";
+        };
+
+        const calculateAccuracy = () => {
+          if (stats.totalQuestions === 0) return 0;
+          return (stats.correctAnswers / stats.totalQuestions) * 100;
         };
 
         return (
@@ -111,16 +119,7 @@
                     </span>
                   </div>
                   <div className="flex items-center">
-                    <span>
-                      Accuracy:{" "}
-                      {stats.totalQuestions
-                        ? (
-                            (stats.correctAnswers / stats.totalQuestions) *
-                            100
-                          ).toFixed(1)
-                        : 0}
-                      %
-                    </span>
+                    <span>Accuracy: {calculateAccuracy().toFixed(1)}%</span>
                   </div>
                 </div>
               </div>
