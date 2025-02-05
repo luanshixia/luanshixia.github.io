@@ -6,19 +6,49 @@
     <title>Mind Map Generator</title>
 
     <!-- Dependencies -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.2.0",
+          "react-dom": "https://esm.sh/react-dom@18.2.0",
+          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
+        }
+      }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-gray-100 p-4">
     <div id="root"></div>
 
-    <script type="text/babel">
-      const { useState, useEffect, useRef } = React;
-      const { createRoot } = ReactDOM;
-      // Simple SVG icons components
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect, useRef } from "react";
+      import { createRoot } from "react-dom/client";
+
+      // Card Components
+      const Card = ({ children, className = "" }) => (
+        <div
+          className={`bg-white rounded-lg shadow-lg overflow-hidden ${className}`}
+        >
+          {children}
+        </div>
+      );
+
+      const CardHeader = ({ children }) => (
+        <div className="px-6 py-4 border-b border-gray-200">{children}</div>
+      );
+
+      const CardTitle = ({ children }) => (
+        <h2 className="text-xl font-semibold text-gray-800">{children}</h2>
+      );
+
+      const CardContent = ({ children }) => (
+        <div className="p-6">{children}</div>
+      );
+
+      // Icon Components
       const ZoomIn = ({ size = 20 }) => (
         <svg
           width={size}
@@ -71,26 +101,7 @@
         </svg>
       );
 
-      const Card = ({ children, className = "" }) => (
-        <div
-          className={`bg-white rounded-lg shadow-lg overflow-hidden ${className}`}
-        >
-          {children}
-        </div>
-      );
-
-      const CardHeader = ({ children }) => (
-        <div className="px-6 py-4 border-b border-gray-200">{children}</div>
-      );
-
-      const CardTitle = ({ children }) => (
-        <h2 className="text-xl font-semibold text-gray-800">{children}</h2>
-      );
-
-      const CardContent = ({ children }) => (
-        <div className="p-6">{children}</div>
-      );
-
+      // Tree Layout Logic
       const calculateTreeLayout = (node, x0 = 0, y0 = 0, level = 0) => {
         const NODE_HEIGHT = 80;
         const LEVEL_WIDTH = 200;
@@ -126,6 +137,7 @@
         return node;
       };
 
+      // Mind Map Components
       const MindMapNode = ({ node, parentX, parentY }) => {
         const nodeWidth = 150;
         const nodeHeight = 40;
@@ -143,7 +155,7 @@
                                  ${node.x} ${node.y + nodeHeight / 2}`}
                 stroke="#94a3b8"
                 fill="none"
-                strokeWidth="1.5"
+                strokeWidth={1.5}
               />
             )}
 
@@ -152,11 +164,11 @@
               y={node.y}
               width={nodeWidth}
               height={nodeHeight}
-              rx="5"
-              ry="5"
+              rx={5}
+              ry={5}
               fill={parentX === undefined ? "#93c5fd" : "#dbeafe"}
               stroke="#60a5fa"
-              strokeWidth="1.5"
+              strokeWidth={1.5}
             />
 
             <text
