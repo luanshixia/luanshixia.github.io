@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mind Map Generator</title>
+
+    <!-- Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 p-4">
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect, useRef } = React;
+      const { createRoot } = ReactDOM;
+      const { ZoomIn, ZoomOut, MoveHorizontal } = window.lucide;
+
+      const Card = ({ children, className = "" }) => (
+        <div
+          className={`bg-white rounded-lg shadow-lg overflow-hidden ${className}`}
+        >
+          {children}
+        </div>
+      );
+
+      const CardHeader = ({ children }) => (
+        <div className="px-6 py-4 border-b border-gray-200">{children}</div>
+      );
+
+      const CardTitle = ({ children }) => (
+        <h2 className="text-xl font-semibold text-gray-800">{children}</h2>
+      );
+
+      const CardContent = ({ children }) => (
+        <div className="p-6">{children}</div>
+      );
+
+      const calculateTreeLayout = (node, x0 = 0, y0 = 0, level = 0) => {
+        const NODE_HEIGHT = 80;
+        const LEVEL_WIDTH = 200;
+        const NODE_PADDING = 20;
+
+        node.x = x0;
+        node.y = y0;
+
+        if (!node.children || node.children.length === 0) {
+          node.width = 0;
+          node.height = NODE_HEIGHT;
+          return node;
+        }
+
+        let totalHeight = 0;
+        let maxChildWidth = 0;
+
+        node.children.forEach((child, i) => {
+          calculateTreeLayout(
+            child,
+            x0 + LEVEL_WIDTH,
+            y0 + totalHeight,
+            level + 1
+          );
+          totalHeight += child.height + NODE_PADDING;
+          maxChildWidth = Math.max(maxChildWidth, child.width);
+        });
+
+        totalHeight -= NODE_PADDING;
+        node.width = LEVEL_WIDTH + maxChildWidth;
+        node.height = Math.max(NODE_HEIGHT, totalHeight);
+
+        return node;
+      };
+
+      const MindMapNode = ({ node, parentX, parentY }) => {
+        const nodeWidth = 150;
+        const nodeHeight = 40;
+        const fontSize = 12;
+
+        return (
+          <g>
+            {parentX !== undefined && (
+              <path
+                d={`M${parentX + nodeWidth} ${parentY + nodeHeight / 2}
+                                C${parentX + nodeWidth + 40} ${
+                  parentY + nodeHeight / 2
+                },
+                                 ${node.x - 40} ${node.y + nodeHeight / 2},
+                                 ${node.x} ${node.y + nodeHeight / 2}`}
+                stroke="#94a3b8"
+                fill="none"
+                strokeWidth="1.5"
+              />
+            )}
+
+            <rect
+              x={node.x}
+              y={node.y}
+              width={nodeWidth}
+              height={nodeHeight}
+              rx="5"
+              ry="5"
+              fill={parentX === undefined ? "#93c5fd" : "#dbeafe"}
+              stroke="#60a5fa"
+              strokeWidth="1.5"
+            />
+
+            <text
+              x={node.x + nodeWidth / 2}
+              y={node.y + nodeHeight / 2}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize={fontSize}
+              fill="#1e3a8a"
+            >
+              {node.text.length > 20
+                ? node.text.substring(0, 17) + "..."
+                : node.text}
+            </text>
+
+            {node.children?.map((child, index) => (
+              <MindMapNode
+                key={index}
+                node={child}
+                parentX={node.x}
+                parentY={node.y}
+              />
+            ))}
+          </g>
+        );
+      };
+
+      const Viewport = ({ children, width, height }) => {
+        const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
+        const [isDragging, setIsDragging] = useState(false);
+        const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+        const svgRef = useRef(null);
+
+        const handleMouseDown = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (e.button === 0) {
+            setIsDragging(true);
+            setDragStart({
+              x: e.clientX - transform.x,
+              y: e.clientY - transform.y,
+            });
+          }
+        };
+
+        const handleMouseMove = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (isDragging) {
+            setTransform((prev) => ({
+              ...prev,
+              x: e.clientX - dragStart.x,
+              y: e.clientY - dragStart.y,
+            }));
+          }
+        };
+
+        const handleMouseUp = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsDragging(false);
+        };
+
+        const handleWheel = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const scaleSensitivity = 0.002;
+          const scaleChange = -e.deltaY * scaleSensitivity;
+
+          const point = svgRef.current.createSVGPoint();
+          point.x = e.clientX;
+          point.y = e.clientY;
+          const svgP = point.matrixTransform(
+            svgRef.current.getScreenCTM().inverse()
+          );
+
+          const newScale = Math.min(
+            Math.max(transform.scale + scaleChange, 0.1),
+            3
+          );
+          const scaleRatio = newScale / transform.scale;
+
+          setTransform((prev) => ({
+            scale: newScale,
+            x: svgP.x - (svgP.x - prev.x) * scaleRatio,
+            y: svgP.y - (svgP.y - prev.y) * scaleRatio,
+          }));
+        };
+
+        const handleZoomButton = (direction) => {
+          const scaleChange = direction * 0.2;
+          const newScale = Math.min(
+            Math.max(transform.scale + scaleChange, 0.1),
+            3
+          );
+
+          const centerX = width / 2;
+          const centerY = height / 2;
+          const scaleRatio = newScale / transform.scale;
+
+          setTransform((prev) => ({
+            scale: newScale,
+            x: centerX - (centerX - prev.x) * scaleRatio,
+            y: centerY - (centerY - prev.y) * scaleRatio,
+          }));
+        };
+
+        const resetView = () => {
+          setTransform({ x: 0, y: 0, scale: 1 });
+        };
+
+        return (
+          <div className="relative">
+            <div className="absolute top-4 right-4 flex gap-2 z-10">
+              <button
+                onClick={() => handleZoomButton(1)}
+                className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+              >
+                <ZoomIn size={20} />
+              </button>
+              <button
+                onClick={() => handleZoomButton(-1)}
+                className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+              >
+                <ZoomOut size={20} />
+              </button>
+              <button
+                onClick={resetView}
+                className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+              >
+                <MoveHorizontal size={20} />
+              </button>
+            </div>
+
+            <svg
+              ref={svgRef}
+              width={width}
+              height={height}
+              viewBox={`0 0 ${width} ${height}`}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onWheel={handleWheel}
+              style={{ cursor: isDragging ? "grabbing" : "grab" }}
+            >
+              <g
+                transform={`translate(${transform.x},${transform.y}) scale(${transform.scale})`}
+              >
+                {children}
+              </g>
+            </svg>
+          </div>
+        );
+      };
+
+      const parseBulletList = (text) => {
+        const lines = text.split("\n").filter((line) => line.trim());
+        const root = { text: "Root", children: [] };
+        const stack = [{ node: root, level: -1 }];
+
+        lines.forEach((line) => {
+          const indent = line.search(/\S/);
+          const text = line
+            .trim()
+            .replace(/^[-*•]/, "")
+            .trim();
+          const node = { text, children: [] };
+
+          while (stack.length > 1 && stack[stack.length - 1].level >= indent) {
+            stack.pop();
+          }
+
+          const parent = stack[stack.length - 1].node;
+          parent.children.push(node);
+          stack.push({ node, level: indent });
+        });
+
+        return root;
+      };
+
+      const BulletListToMindMap = () => {
+        const [bulletList, setBulletList] = useState(
+          `Goals
+  Health
+    Exercise 3x weekly
+    Eat more vegetables
+    Sleep 8 hours
+  Career
+    Learn new skills
+    Network
+    Complete certification
+  Personal
+    Read 12 books
+    Travel
+    Learn a language`
+        );
+
+        const [dimensions, setDimensions] = useState({
+          width: 800,
+          height: 600,
+        });
+        const containerRef = useRef(null);
+
+        useEffect(() => {
+          const updateDimensions = () => {
+            if (containerRef.current) {
+              setDimensions({
+                width: containerRef.current.clientWidth,
+                height: Math.max(600, containerRef.current.clientWidth * 0.75),
+              });
+            }
+          };
+
+          updateDimensions();
+          window.addEventListener("resize", updateDimensions);
+          return () => window.removeEventListener("resize", updateDimensions);
+        }, []);
+
+        const mindMapData = parseBulletList(bulletList);
+        const layoutData = calculateTreeLayout(mindMapData);
+
+        return (
+          <div className="w-full max-w-4xl mx-auto p-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Bullet List to Mind Map Converter</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Enter Bullet List:
+                    </label>
+                    <textarea
+                      value={bulletList}
+                      onChange={(e) => setBulletList(e.target.value)}
+                      className="w-full h-64 p-4 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter your bullet list here..."
+                    />
+                  </div>
+
+                  <div ref={containerRef} className="overflow-hidden">
+                    <Viewport
+                      width={dimensions.width}
+                      height={dimensions.height}
+                    >
+                      <MindMapNode node={layoutData} />
+                    </Viewport>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      };
+
+      const root = createRoot(document.getElementById("root"));
+      root.render(<BulletListToMindMap />);
+    </script>
+  </body>
+</html>
