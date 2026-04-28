@@ -1,52 +1,376 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Yang Wang</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.css">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="css/site.css">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom": "https://esm.sh/react-dom@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
+      }
+    }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    @keyframes gradient-shift {
+      0%, 100% { background-position: 0% 50%; }
+      50%       { background-position: 100% 50%; }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-10px); }
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #a78bfa 0%, #818cf8 40%, #e879f9 100%);
+      background-size: 200% 200%;
+      animation: gradient-shift 6s ease infinite;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-glow {
+      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(139, 92, 246, 0.25), transparent);
+    }
+
+    .card-glow:hover {
+      box-shadow: 0 0 0 1px rgba(139,92,246,0.3), 0 16px 40px rgba(0,0,0,0.4);
+    }
+
+    .cursor::after {
+      content: '|';
+      animation: blink 1s step-end infinite;
+      color: #a78bfa;
+    }
+
+    .animate-fade-up { animation: fade-up 0.7s ease-out forwards; }
+    .animate-float   { animation: float 4s ease-in-out infinite; }
+
+    .delay-100 { animation-delay: 0.1s; }
+    .delay-200 { animation-delay: 0.2s; }
+    .delay-300 { animation-delay: 0.3s; }
+    .delay-400 { animation-delay: 0.4s; }
+
+    html { scroll-behavior: smooth; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0f; }
+    ::-webkit-scrollbar-thumb { background: #3b3b52; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #7c3aed; }
+  </style>
 </head>
+<body class="bg-[#0a0a0f] text-gray-100 antialiased">
+  <div id="root"></div>
 
-<body>
-  <header class="top-header" id="top-header">
-    <div class="page-width header-mask">
-      <div class="header-mask-content">
-        <div class="horizontal-flex">
-          <span class="header-title">
-            <i class="fa fa-home" aria-hidden="true"></i>Yang Wang</span>
-          <span class="header-control" id="button-add">
-            <i class="fa fa-plus" aria-hidden="true" title="Add new item"></i>
-          </span>
+  <script type="text/babel" data-type="module">
+    import React, { useState, useEffect, useCallback } from "react";
+    import { createRoot } from "react-dom/client";
+
+    const PROJECTS = [
+      { name: "Mind Map",        desc: "Interactive mind-mapping canvas",     href: "archive/demos/mindmap.html",        tag: "Visualization", icon: "🧠" },
+      { name: "Fast Read",       desc: "Speed-reading trainer using RSVP",    href: "archive/demos/fastread.html",       tag: "Productivity",  icon: "⚡" },
+      { name: "Chord",           desc: "Guitar chord explorer & playback",    href: "archive/demos/chord.html",          tag: "Music",         icon: "🎸" },
+      { name: "Palette",         desc: "Color palette generator",             href: "archive/demos/palette.html",        tag: "Design",        icon: "🎨" },
+      { name: "Ultra TT",        desc: "Table tennis stat tracker",           href: "archive/demos/ultratt.html",        tag: "Sports",        icon: "🏓" },
+      { name: "Morph",           desc: "Shape-morphing SVG animation",        href: "archive/demos/morph.html",          tag: "Animation",     icon: "✨" },
+      { name: "Bubbles",         desc: "Interactive bubble physics sim",      href: "archive/demos/bubbles.html",        tag: "Physics",       icon: "🫧" },
+      { name: "Stream",          desc: "Live data stream visualizer",         href: "archive/demos/stream.html",         tag: "Data",          icon: "📊" },
+      { name: "React Playground",desc: "In-browser React scratchpad",         href: "archive/demos/react-playground.html", tag: "Dev",         icon: "⚛️"  },
+      { name: "EMind",           desc: "Extended mind-map experiment",        href: "archive/demos/emind.html",          tag: "Visualization", icon: "🕸️" },
+      { name: "Unicode",         desc: "Unicode character explorer",          href: "archive/demos/unicode.html",        tag: "Dev",           icon: "🔤" },
+      { name: "Flip",            desc: "Card flip animation gallery",         href: "archive/demos/flip.html",           tag: "Animation",     icon: "🃏" },
+    ];
+
+    const TAG_STYLES = {
+      "Visualization": "bg-blue-500/15 text-blue-300 border-blue-500/25",
+      "Productivity":  "bg-emerald-500/15 text-emerald-300 border-emerald-500/25",
+      "Music":         "bg-violet-500/15 text-violet-300 border-violet-500/25",
+      "Design":        "bg-pink-500/15 text-pink-300 border-pink-500/25",
+      "Sports":        "bg-orange-500/15 text-orange-300 border-orange-500/25",
+      "Animation":     "bg-cyan-500/15 text-cyan-300 border-cyan-500/25",
+      "Physics":       "bg-yellow-500/15 text-yellow-300 border-yellow-500/25",
+      "Data":          "bg-red-500/15 text-red-300 border-red-500/25",
+      "Dev":           "bg-indigo-500/15 text-indigo-300 border-indigo-500/25",
+    };
+
+    function TypeWriter({ phrases }) {
+      const [display, setDisplay]   = useState("");
+      const [phrase, setPhrase]     = useState(0);
+      const [pos, setPos]           = useState(0);
+      const [erasing, setErasing]   = useState(false);
+
+      useEffect(() => {
+        const current = phrases[phrase];
+        let t;
+        if (!erasing && pos < current.length) {
+          t = setTimeout(() => setPos(p => p + 1), 75);
+        } else if (!erasing && pos === current.length) {
+          t = setTimeout(() => setErasing(true), 2200);
+        } else if (erasing && pos > 0) {
+          t = setTimeout(() => setPos(p => p - 1), 35);
+        } else {
+          setErasing(false);
+          setPhrase(i => (i + 1) % phrases.length);
+        }
+        setDisplay(current.slice(0, pos));
+        return () => clearTimeout(t);
+      }, [pos, erasing, phrase]);
+
+      return (
+        <span className="mono text-violet-400 cursor">{display}</span>
+      );
+    }
+
+    function NavLink({ href, children, external }) {
+      return (
+        <a
+          href={href}
+          target={external ? "_blank" : undefined}
+          rel={external ? "noopener noreferrer" : undefined}
+          className="text-sm text-gray-400 hover:text-white transition-colors duration-200"
+        >
+          {children}
+        </a>
+      );
+    }
+
+    function ProjectCard({ project, index }) {
+      return (
+        <a
+          href={project.href}
+          className={`
+            card-glow group block bg-white/[0.03] border border-white/[0.06]
+            rounded-2xl p-5 transition-all duration-300
+            hover:bg-white/[0.06] hover:border-violet-500/30
+          `}
+          style={{ animationDelay: `${index * 50}ms` }}
+        >
+          <div className="flex items-start justify-between mb-4">
+            <span className="text-2xl">{project.icon}</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full border ${TAG_STYLES[project.tag]}`}>
+              {project.tag}
+            </span>
+          </div>
+          <h3 className="font-semibold text-gray-100 group-hover:text-white mb-1.5 transition-colors">
+            {project.name}
+          </h3>
+          <p className="text-sm text-gray-500 group-hover:text-gray-400 transition-colors leading-relaxed">
+            {project.desc}
+          </p>
+          <div className="mt-4 flex items-center gap-1 text-xs text-gray-600 group-hover:text-violet-400 transition-colors">
+            <span>Open</span>
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </a>
+      );
+    }
+
+    function StatBox({ label, value }) {
+      return (
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
+          <div className="mono text-xs text-gray-600 mb-1">{label}</div>
+          <div className="text-gray-200 font-medium">{value}</div>
         </div>
-        <div class="horizontal-flex">
-          <span class="header-title">
-            <input type="text" placeholder="Type address here..." id="input-address">
-          </span>
-          <span class="header-control" id="button-done">
-            <i class="fa fa-check" aria-hidden="true" title="Done"></i>
-          </span>
+      );
+    }
+
+    function App() {
+      const [scrolled, setScrolled] = useState(false);
+
+      useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 40);
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+      }, []);
+
+      return (
+        <div className="min-h-screen">
+
+          {/* ── Nav ── */}
+          <nav className={`
+            fixed top-0 left-0 right-0 z-50 transition-all duration-300
+            ${scrolled
+              ? "backdrop-blur-xl bg-[#0a0a0f]/90 border-b border-white/[0.06] py-3"
+              : "py-5"}
+          `}>
+            <div className="max-w-5xl mx-auto px-6 flex items-center justify-between">
+              <span className="mono text-sm text-violet-400 font-medium tracking-wide">~/yang</span>
+              <div className="flex items-center gap-8">
+                <NavLink href="#about">About</NavLink>
+                <NavLink href="#projects">Projects</NavLink>
+                <NavLink href="https://github.com/luanshixia" external>
+                  <span className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                    </svg>
+                    GitHub
+                  </span>
+                </NavLink>
+              </div>
+            </div>
+          </nav>
+
+          {/* ── Hero ── */}
+          <section className="hero-glow relative min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+            {/* background grid */}
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-[size:72px_72px]" />
+
+            <div className="relative max-w-5xl w-full">
+              <div className="animate-fade-up opacity-0">
+                <p className="mono text-sm text-gray-500 mb-5 tracking-widest uppercase">
+                  Hello, world. I'm
+                </p>
+                <h1 className="text-7xl md:text-9xl font-bold tracking-tighter mb-5 leading-none">
+                  <span className="gradient-text">Yang Wang</span>
+                </h1>
+                <div className="text-xl md:text-2xl text-gray-400 mb-8 min-h-[2rem]">
+                  <TypeWriter phrases={[
+                    "Software Engineer",
+                    "Creative Coder",
+                    "Builder of things",
+                    "Web tinkerer",
+                  ]} />
+                </div>
+                <p className="text-gray-500 max-w-xl text-lg leading-relaxed mb-10">
+                  I build web experiments, tools, and interactive visualizations —
+                  exploring the intersection of code, design, and curiosity.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <a
+                    href="#projects"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-medium transition-colors duration-200 shadow-lg shadow-violet-500/20"
+                  >
+                    View Projects
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </a>
+                  <a
+                    href="mailto:luanshixia@gmail.com"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.08] text-gray-300 rounded-xl font-medium transition-all duration-200"
+                  >
+                    Get in Touch
+                  </a>
+                </div>
+              </div>
+
+              {/* floating orb decoration */}
+              <div className="animate-float pointer-events-none absolute -right-8 top-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-gradient-to-br from-violet-600/10 to-fuchsia-600/10 blur-3xl hidden md:block" />
+            </div>
+          </section>
+
+          {/* ── About ── */}
+          <section id="about" className="py-28 px-6">
+            <div className="max-w-5xl mx-auto">
+              <div className="flex items-center gap-3 mb-12">
+                <span className="mono text-violet-500 text-sm">01.</span>
+                <h2 className="text-3xl font-bold gradient-text">About</h2>
+                <div className="flex-1 h-px bg-white/[0.06] ml-2" />
+              </div>
+
+              <div className="grid md:grid-cols-5 gap-12 items-start">
+                <div className="md:col-span-3 space-y-5 text-gray-400 text-lg leading-relaxed">
+                  <p>
+                    I'm a software engineer who loves building things for the web. My work
+                    spans interactive data visualizations, productivity tools, and creative
+                    experiments — the kind of projects that are fun to build and fun to use.
+                  </p>
+                  <p>
+                    I'm drawn to the craft of making complex ideas feel simple and making
+                    simple interactions feel delightful. TypeScript, React, and a blank canvas
+                    are my usual starting points.
+                  </p>
+                  <p>
+                    When I'm not writing code, I'm exploring new ideas at the intersection
+                    of technology, design, and whatever catches my attention that week.
+                  </p>
+                </div>
+                <div className="md:col-span-2 grid grid-cols-2 gap-3">
+                  <StatBox label="Focus"    value="Web & Tools" />
+                  <StatBox label="Language" value="TypeScript" />
+                  <StatBox label="Stack"    value="React + more" />
+                  <StatBox label="Vibe"     value="Ship it" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Projects ── */}
+          <section id="projects" className="py-28 px-6">
+            <div className="max-w-5xl mx-auto">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="mono text-violet-500 text-sm">02.</span>
+                <h2 className="text-3xl font-bold gradient-text">Projects & Demos</h2>
+                <div className="flex-1 h-px bg-white/[0.06] ml-2" />
+              </div>
+              <p className="text-gray-500 mb-12 ml-10">
+                A collection of experiments and tools built over the years.
+              </p>
+
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {PROJECTS.map((p, i) => (
+                  <ProjectCard key={p.name} project={p} index={i} />
+                ))}
+              </div>
+
+              <div className="mt-8 text-center">
+                <a
+                  href="archive/demos/index.html"
+                  className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-violet-400 transition-colors"
+                >
+                  View all demos
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Footer ── */}
+          <footer className="border-t border-white/[0.06] py-10 px-6">
+            <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+              <span className="mono text-gray-600 text-sm">© 2024 Yang Wang</span>
+              <div className="flex gap-8 text-sm text-gray-500">
+                <a href="https://github.com/luanshixia" target="_blank" rel="noopener noreferrer"
+                   className="hover:text-white transition-colors">GitHub</a>
+                <a href="mailto:luanshixia@gmail.com"
+                   className="hover:text-white transition-colors">Email</a>
+                <a href="archive/demos/index.html"
+                   className="hover:text-white transition-colors">All Demos</a>
+              </div>
+            </div>
+          </footer>
+
         </div>
-      </div>
-    </div>
-  </header>
+      );
+    }
 
-  <main class="main-area">
-    <div id="card-list" class="page-width wrap-flex">
-      <div class="card"></div>
-      <div class="card"></div>
-      <div class="card"></div>
-      <div class="card"></div>
-      <div class="card"></div>
-      <div class="card"></div>
-      <div class="card"></div>
-    </div>
-  </main>
-
-  <footer class="bottom-footer"></footer>
-
-  <script src="js/index.js"></script>
+    createRoot(document.getElementById("root")).render(<App />);
+  </script>
 </body>
-
 </html>
