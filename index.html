@@ -68,39 +68,120 @@
     .animate-fade-up { animation: fade-up 0.7s ease-out forwards; }
     .animate-float   { animation: float 4s ease-in-out infinite; }
 
-    .delay-100 { animation-delay: 0.1s; }
-    .delay-200 { animation-delay: 0.2s; }
-    .delay-300 { animation-delay: 0.3s; }
-    .delay-400 { animation-delay: 0.4s; }
-
     html { scroll-behavior: smooth; }
 
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #0a0a0f; }
     ::-webkit-scrollbar-thumb { background: #3b3b52; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #7c3aed; }
+
+    .timeline-line {
+      background: linear-gradient(to bottom, #7c3aed, transparent);
+    }
   </style>
 </head>
 <body class="bg-[#0a0a0f] text-gray-100 antialiased">
   <div id="root"></div>
 
   <script type="text/babel" data-type="module">
-    import React, { useState, useEffect, useCallback } from "react";
+    import React, { useState, useEffect } from "react";
     import { createRoot } from "react-dom/client";
 
+    const EXPERIENCE = [
+      {
+        title: "Senior Software Engineer",
+        company: "Snowflake Inc.",
+        location: "Bellevue, WA",
+        period: "Jul 2022 — Present",
+        current: true,
+        bullets: [
+          "Owner of dynamic task allocation & warehouse scaling — delivered 15% Snowpipe infrastructure cost savings globally via cross-cluster real-time capacity monitoring.",
+          "Designed and implemented Snowpipe multi-region/cloud BCDR, enabling customers to prepare ingestion pipelines for both Snowflake-only and region-wide outages.",
+          "Designed Snowpipe auto-ingest scalability: customers can now bring their own SQS queues, removing a key pipeline bottleneck.",
+          "Built a continuous canary testing pipeline for Snowpipe on Kubernetes.",
+        ],
+      },
+      {
+        title: "Senior Software Engineer",
+        company: "Microsoft — Azure Resource Manager",
+        location: "Redmond, WA",
+        period: "Jan 2017 — Jul 2022",
+        current: false,
+        bullets: [
+          "Core founding member of a new storage service abstracting heterogeneous backends and enabling effortless regional scaling, leveraging deep Azure Cosmos DB expertise.",
+          "Led cross-team, zero-downtime migration of the data layer from a custom global replication system to Azure Cosmos DB.",
+          "Designed and built an end-to-end CDC pipeline on top of Cosmos DB change feed — originally for backup, it became a general-purpose inter-services communication platform.",
+        ],
+      },
+      {
+        title: "Teaching Assistant — Cloud Computing (15-319/619)",
+        company: "Carnegie Mellon University",
+        location: "Pittsburgh, PA",
+        period: "Jan 2016 — Dec 2016",
+        current: false,
+        bullets: [
+          "Developed course content on Apache Spark with AWS EMR and created a new GraphX lab.",
+          "Core developer of course infrastructure.",
+        ],
+      },
+      {
+        title: "Senior Software Engineer",
+        company: "GrapeCity — Component One & Wijmo",
+        location: "Shanghai, China",
+        period: "May 2014 — Jul 2015",
+        current: false,
+        bullets: [
+          "Built C1 Web API from scratch and served as core maintainer of C1 ASP.NET and Wijmo Web Widgets.",
+        ],
+      },
+      {
+        title: "Software Research Engineer",
+        company: "TongJi Urban Planning Design Institute",
+        location: "Shanghai, China",
+        period: "Mar 2010 — Apr 2014",
+        current: false,
+        bullets: [
+          "Architected and led multiple solutions integrating AutoCAD, GIS, Web, and desktop technologies for urban planning, analysis, visualization, and management.",
+        ],
+      },
+    ];
+
+    const EDUCATION = [
+      {
+        degree: "Master of Software Engineering",
+        school: "Carnegie Mellon University",
+        location: "Pittsburgh, PA",
+        period: "2015 — 2016",
+        icon: "🎓",
+      },
+      {
+        degree: "Bachelor of Engineering",
+        school: "Tongji University",
+        location: "Shanghai, China",
+        period: "2006 — 2010",
+        icon: "🎓",
+      },
+    ];
+
+    const SKILLS = [
+      { category: "Software Engineering", items: ["AI Coding", "C#", ".NET", "MSBuild", "Kubernetes", "Cloud Native", "Azure"] },
+      { category: "Distributed Systems",  items: ["Availability", "Scalability", "Global Replication", "Data Migration", "CDC Pipelines", "Cosmos DB"] },
+      { category: "Leadership",           items: ["Data-driven Decisions", "Technical Roadmap", "ROI-based Design", "Cross-team Collaboration"] },
+    ];
+
     const PROJECTS = [
-      { name: "Mind Map",        desc: "Interactive mind-mapping canvas",     href: "archive/demos/mindmap.html",        tag: "Visualization", icon: "🧠" },
-      { name: "Fast Read",       desc: "Speed-reading trainer using RSVP",    href: "archive/demos/fastread.html",       tag: "Productivity",  icon: "⚡" },
-      { name: "Chord",           desc: "Guitar chord explorer & playback",    href: "archive/demos/chord.html",          tag: "Music",         icon: "🎸" },
-      { name: "Palette",         desc: "Color palette generator",             href: "archive/demos/palette.html",        tag: "Design",        icon: "🎨" },
-      { name: "Ultra TT",        desc: "Table tennis stat tracker",           href: "archive/demos/ultratt.html",        tag: "Sports",        icon: "🏓" },
-      { name: "Morph",           desc: "Shape-morphing SVG animation",        href: "archive/demos/morph.html",          tag: "Animation",     icon: "✨" },
-      { name: "Bubbles",         desc: "Interactive bubble physics sim",      href: "archive/demos/bubbles.html",        tag: "Physics",       icon: "🫧" },
-      { name: "Stream",          desc: "Live data stream visualizer",         href: "archive/demos/stream.html",         tag: "Data",          icon: "📊" },
-      { name: "React Playground",desc: "In-browser React scratchpad",         href: "archive/demos/react-playground.html", tag: "Dev",         icon: "⚛️"  },
-      { name: "EMind",           desc: "Extended mind-map experiment",        href: "archive/demos/emind.html",          tag: "Visualization", icon: "🕸️" },
-      { name: "Unicode",         desc: "Unicode character explorer",          href: "archive/demos/unicode.html",        tag: "Dev",           icon: "🔤" },
-      { name: "Flip",            desc: "Card flip animation gallery",         href: "archive/demos/flip.html",           tag: "Animation",     icon: "🃏" },
+      { name: "Mind Map",         desc: "Interactive mind-mapping canvas",    href: "archive/demos/mindmap.html",          tag: "Visualization", icon: "🧠" },
+      { name: "Fast Read",        desc: "Speed-reading trainer using RSVP",   href: "archive/demos/fastread.html",         tag: "Productivity",  icon: "⚡" },
+      { name: "Chord",            desc: "Guitar chord explorer & playback",   href: "archive/demos/chord.html",            tag: "Music",         icon: "🎸" },
+      { name: "Palette",          desc: "Color palette generator",            href: "archive/demos/palette.html",          tag: "Design",        icon: "🎨" },
+      { name: "Ultra TT",         desc: "Table tennis stat tracker",          href: "archive/demos/ultratt.html",          tag: "Sports",        icon: "🏓" },
+      { name: "Morph",            desc: "Shape-morphing SVG animation",       href: "archive/demos/morph.html",            tag: "Animation",     icon: "✨" },
+      { name: "Bubbles",          desc: "Interactive bubble physics sim",     href: "archive/demos/bubbles.html",          tag: "Physics",       icon: "🫧" },
+      { name: "Stream",           desc: "Live data stream visualizer",        href: "archive/demos/stream.html",           tag: "Data",          icon: "📊" },
+      { name: "React Playground", desc: "In-browser React scratchpad",        href: "archive/demos/react-playground.html", tag: "Dev",           icon: "⚛️" },
+      { name: "EMind",            desc: "Extended mind-map experiment",       href: "archive/demos/emind.html",            tag: "Visualization", icon: "🕸️" },
+      { name: "Unicode",          desc: "Unicode character explorer",         href: "archive/demos/unicode.html",          tag: "Dev",           icon: "🔤" },
+      { name: "Flip",             desc: "Card flip animation gallery",        href: "archive/demos/flip.html",             tag: "Animation",     icon: "🃏" },
     ];
 
     const TAG_STYLES = {
@@ -115,11 +196,19 @@
       "Dev":           "bg-indigo-500/15 text-indigo-300 border-indigo-500/25",
     };
 
+    const SKILL_CAT_STYLES = [
+      "bg-violet-500/10 border-violet-500/20 text-violet-300",
+      "bg-cyan-500/10 border-cyan-500/20 text-cyan-300",
+      "bg-fuchsia-500/10 border-fuchsia-500/20 text-fuchsia-300",
+    ];
+
+    /* ── Components ── */
+
     function TypeWriter({ phrases }) {
-      const [display, setDisplay]   = useState("");
-      const [phrase, setPhrase]     = useState(0);
-      const [pos, setPos]           = useState(0);
-      const [erasing, setErasing]   = useState(false);
+      const [display, setDisplay] = useState("");
+      const [phrase,  setPhrase]  = useState(0);
+      const [pos,     setPos]     = useState(0);
+      const [erasing, setErasing] = useState(false);
 
       useEffect(() => {
         const current = phrases[phrase];
@@ -138,9 +227,7 @@
         return () => clearTimeout(t);
       }, [pos, erasing, phrase]);
 
-      return (
-        <span className="mono text-violet-400 cursor">{display}</span>
-      );
+      return <span className="mono text-violet-400 cursor">{display}</span>;
     }
 
     function NavLink({ href, children, external }) {
@@ -156,16 +243,55 @@
       );
     }
 
-    function ProjectCard({ project, index }) {
+    function SectionHeader({ num, title }) {
+      return (
+        <div className="flex items-center gap-3 mb-12">
+          <span className="mono text-violet-500 text-sm">{num}.</span>
+          <h2 className="text-3xl font-bold gradient-text">{title}</h2>
+          <div className="flex-1 h-px bg-white/[0.06] ml-2" />
+        </div>
+      );
+    }
+
+    function ExperienceItem({ job, last }) {
+      return (
+        <div className="relative pl-8">
+          {/* timeline spine */}
+          {!last && <div className="timeline-line absolute left-[7px] top-4 bottom-0 w-px" />}
+          {/* dot */}
+          <div className={`absolute left-0 top-1.5 w-3.5 h-3.5 rounded-full border-2 ${job.current ? "border-violet-400 bg-violet-400/30" : "border-gray-600 bg-gray-800"}`} />
+
+          <div className="mb-10">
+            <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 mb-1">
+              <div>
+                <span className="font-semibold text-gray-100">{job.title}</span>
+                {job.current && (
+                  <span className="ml-2 mono text-[10px] px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                    current
+                  </span>
+                )}
+              </div>
+              <span className="mono text-xs text-gray-500 shrink-0">{job.period}</span>
+            </div>
+            <div className="text-sm text-violet-400 mb-3">{job.company} · {job.location}</div>
+            <ul className="space-y-2">
+              {job.bullets.map((b, i) => (
+                <li key={i} className="flex gap-2 text-sm text-gray-400 leading-relaxed">
+                  <span className="text-violet-600 mt-1 shrink-0">▸</span>
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
+    }
+
+    function ProjectCard({ project }) {
       return (
         <a
           href={project.href}
-          className={`
-            card-glow group block bg-white/[0.03] border border-white/[0.06]
-            rounded-2xl p-5 transition-all duration-300
-            hover:bg-white/[0.06] hover:border-violet-500/30
-          `}
-          style={{ animationDelay: `${index * 50}ms` }}
+          className="card-glow group block bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 transition-all duration-300 hover:bg-white/[0.06] hover:border-violet-500/30"
         >
           <div className="flex items-start justify-between mb-4">
             <span className="text-2xl">{project.icon}</span>
@@ -189,14 +315,7 @@
       );
     }
 
-    function StatBox({ label, value }) {
-      return (
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
-          <div className="mono text-xs text-gray-600 mb-1">{label}</div>
-          <div className="text-gray-200 font-medium">{value}</div>
-        </div>
-      );
-    }
+    /* ── App ── */
 
     function App() {
       const [scrolled, setScrolled] = useState(false);
@@ -211,17 +330,21 @@
         <div className="min-h-screen">
 
           {/* ── Nav ── */}
-          <nav className={`
-            fixed top-0 left-0 right-0 z-50 transition-all duration-300
-            ${scrolled
-              ? "backdrop-blur-xl bg-[#0a0a0f]/90 border-b border-white/[0.06] py-3"
-              : "py-5"}
-          `}>
+          <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "backdrop-blur-xl bg-[#0a0a0f]/90 border-b border-white/[0.06] py-3" : "py-5"}`}>
             <div className="max-w-5xl mx-auto px-6 flex items-center justify-between">
               <span className="mono text-sm text-violet-400 font-medium tracking-wide">~/yang</span>
-              <div className="flex items-center gap-8">
+              <div className="flex items-center gap-6">
                 <NavLink href="#about">About</NavLink>
+                <NavLink href="#experience">Experience</NavLink>
                 <NavLink href="#projects">Projects</NavLink>
+                <NavLink href="https://www.linkedin.com/in/yangw3/" external>
+                  <span className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                    LinkedIn
+                  </span>
+                </NavLink>
                 <NavLink href="https://github.com/luanshixia" external>
                   <span className="flex items-center gap-1.5">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -236,35 +359,36 @@
 
           {/* ── Hero ── */}
           <section className="hero-glow relative min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
-            {/* background grid */}
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-[size:72px_72px]" />
 
             <div className="relative max-w-5xl w-full">
               <div className="animate-fade-up opacity-0">
-                <p className="mono text-sm text-gray-500 mb-5 tracking-widest uppercase">
-                  Hello, world. I'm
-                </p>
+                <p className="mono text-sm text-gray-500 mb-5 tracking-widest uppercase">Hello, world. I'm</p>
                 <h1 className="text-7xl md:text-9xl font-bold tracking-tighter mb-5 leading-none">
                   <span className="gradient-text">Yang Wang</span>
                 </h1>
                 <div className="text-xl md:text-2xl text-gray-400 mb-8 min-h-[2rem]">
                   <TypeWriter phrases={[
-                    "Software Engineer",
+                    "Senior Software Engineer",
+                    "Distributed Systems Builder",
+                    "Cloud Infrastructure Engineer",
                     "Creative Coder",
-                    "Builder of things",
-                    "Web tinkerer",
                   ]} />
                 </div>
-                <p className="text-gray-500 max-w-xl text-lg leading-relaxed mb-10">
-                  I build web experiments, tools, and interactive visualizations —
-                  exploring the intersection of code, design, and curiosity.
+                <p className="text-gray-500 max-w-xl text-lg leading-relaxed mb-3">
+                  Experienced engineer specializing in large-scale, data-intensive,
+                  geo-distributed cloud systems — currently at{" "}
+                  <span className="text-[#29b5e8] font-medium">Snowflake</span>.
+                </p>
+                <p className="text-gray-600 max-w-xl text-base leading-relaxed mb-10">
+                  Greater Seattle Area · luanshixia@gmail.com
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <a
-                    href="#projects"
+                    href="#experience"
                     className="inline-flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl font-medium transition-colors duration-200 shadow-lg shadow-violet-500/20"
                   >
-                    View Projects
+                    View Experience
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -278,57 +402,113 @@
                 </div>
               </div>
 
-              {/* floating orb decoration */}
               <div className="animate-float pointer-events-none absolute -right-8 top-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-gradient-to-br from-violet-600/10 to-fuchsia-600/10 blur-3xl hidden md:block" />
             </div>
           </section>
 
           {/* ── About ── */}
-          <section id="about" className="py-28 px-6">
+          <section id="about" className="py-24 px-6">
             <div className="max-w-5xl mx-auto">
-              <div className="flex items-center gap-3 mb-12">
-                <span className="mono text-violet-500 text-sm">01.</span>
-                <h2 className="text-3xl font-bold gradient-text">About</h2>
-                <div className="flex-1 h-px bg-white/[0.06] ml-2" />
-              </div>
+              <SectionHeader num="01" title="About" />
 
               <div className="grid md:grid-cols-5 gap-12 items-start">
                 <div className="md:col-span-3 space-y-5 text-gray-400 text-lg leading-relaxed">
                   <p>
-                    I'm a software engineer who loves building things for the web. My work
-                    spans interactive data visualizations, productivity tools, and creative
-                    experiments — the kind of projects that are fun to build and fun to use.
+                    I'm a senior software engineer with deep expertise in large-scale,
+                    data-intensive, geo-distributed cloud-based systems. Over 15+ years I've
+                    designed and shipped infrastructure that operates at global scale — from
+                    Snowflake's ingestion pipelines to Microsoft Azure's core data plane.
                   </p>
                   <p>
-                    I'm drawn to the craft of making complex ideas feel simple and making
-                    simple interactions feel delightful. TypeScript, React, and a blank canvas
-                    are my usual starting points.
+                    I care about correctness, availability, and the kind of architectural
+                    decisions that pay off years later. I also build web experiments and
+                    creative tools on the side — because shipping something you can click is
+                    still one of the most satisfying things in software.
                   </p>
-                  <p>
-                    When I'm not writing code, I'm exploring new ideas at the intersection
-                    of technology, design, and whatever catches my attention that week.
-                  </p>
+
+                  {/* Skills */}
+                  <div className="pt-4 space-y-4">
+                    {SKILLS.map((s, i) => (
+                      <div key={s.category}>
+                        <div className="mono text-xs text-gray-600 mb-2 uppercase tracking-wider">{s.category}</div>
+                        <div className="flex flex-wrap gap-2">
+                          {s.items.map(item => (
+                            <span key={item} className={`text-xs px-2.5 py-1 rounded-lg border ${SKILL_CAT_STYLES[i]}`}>
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="md:col-span-2 grid grid-cols-2 gap-3">
-                  <StatBox label="Focus"    value="Web & Tools" />
-                  <StatBox label="Language" value="TypeScript" />
-                  <StatBox label="Stack"    value="React + more" />
-                  <StatBox label="Vibe"     value="Ship it" />
+
+                <div className="md:col-span-2 space-y-3">
+                  {[
+                    { label: "current",    value: "Snowflake Inc." },
+                    { label: "location",   value: "Greater Seattle Area" },
+                    { label: "prev",       value: "Microsoft Azure" },
+                    { label: "education",  value: "CMU · MSE" },
+                    { label: "experience", value: "15+ years" },
+                    { label: "open to",    value: "Interesting problems" },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 flex justify-between items-center">
+                      <span className="mono text-xs text-gray-600">{label}</span>
+                      <span className="text-sm text-gray-200 font-medium">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Experience ── */}
+          <section id="experience" className="py-24 px-6">
+            <div className="max-w-5xl mx-auto">
+              <SectionHeader num="02" title="Experience" />
+
+              <div className="grid md:grid-cols-5 gap-12">
+                <div className="md:col-span-3">
+                  {EXPERIENCE.map((job, i) => (
+                    <ExperienceItem key={i} job={job} last={i === EXPERIENCE.length - 1} />
+                  ))}
+                </div>
+
+                {/* Education sidebar */}
+                <div className="md:col-span-2">
+                  <div className="mono text-xs text-gray-600 uppercase tracking-wider mb-4">Education</div>
+                  <div className="space-y-4">
+                    {EDUCATION.map((ed, i) => (
+                      <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+                        <div className="text-2xl mb-3">{ed.icon}</div>
+                        <div className="font-semibold text-gray-100 text-sm mb-1">{ed.degree}</div>
+                        <div className="text-violet-400 text-xs mb-1">{ed.school}</div>
+                        <div className="mono text-xs text-gray-600">{ed.location} · {ed.period}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Contact card */}
+                  <div className="mt-6 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border border-violet-500/20 rounded-2xl p-5">
+                    <div className="mono text-xs text-gray-600 uppercase tracking-wider mb-3">Contact</div>
+                    <a href="mailto:luanshixia@gmail.com" className="block text-sm text-gray-300 hover:text-white transition-colors mb-2">
+                      luanshixia@gmail.com
+                    </a>
+                    <a href="https://www.linkedin.com/in/yangw3/" target="_blank" rel="noopener noreferrer" className="block text-sm text-violet-400 hover:text-violet-300 transition-colors">
+                      linkedin.com/in/yangw3
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
           </section>
 
           {/* ── Projects ── */}
-          <section id="projects" className="py-28 px-6">
+          <section id="projects" className="py-24 px-6">
             <div className="max-w-5xl mx-auto">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="mono text-violet-500 text-sm">02.</span>
-                <h2 className="text-3xl font-bold gradient-text">Projects & Demos</h2>
-                <div className="flex-1 h-px bg-white/[0.06] ml-2" />
-              </div>
-              <p className="text-gray-500 mb-12 ml-10">
-                A collection of experiments and tools built over the years.
+              <SectionHeader num="03" title="Projects & Demos" />
+              <p className="text-gray-500 mb-12 -mt-6 ml-10">
+                Side projects, experiments, and interactive tools built over the years.
               </p>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -338,10 +518,7 @@
               </div>
 
               <div className="mt-8 text-center">
-                <a
-                  href="archive/demos/index.html"
-                  className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-violet-400 transition-colors"
-                >
+                <a href="archive/demos/index.html" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-violet-400 transition-colors">
                   View all demos
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -354,14 +531,12 @@
           {/* ── Footer ── */}
           <footer className="border-t border-white/[0.06] py-10 px-6">
             <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-              <span className="mono text-gray-600 text-sm">© 2024 Yang Wang</span>
+              <span className="mono text-gray-600 text-sm">© 2026 Yang Wang</span>
               <div className="flex gap-8 text-sm text-gray-500">
-                <a href="https://github.com/luanshixia" target="_blank" rel="noopener noreferrer"
-                   className="hover:text-white transition-colors">GitHub</a>
-                <a href="mailto:luanshixia@gmail.com"
-                   className="hover:text-white transition-colors">Email</a>
-                <a href="archive/demos/index.html"
-                   className="hover:text-white transition-colors">All Demos</a>
+                <a href="https://github.com/luanshixia" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
+                <a href="https://www.linkedin.com/in/yangw3/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">LinkedIn</a>
+                <a href="mailto:luanshixia@gmail.com" className="hover:text-white transition-colors">Email</a>
+                <a href="archive/demos/index.html" className="hover:text-white transition-colors">All Demos</a>
               </div>
             </div>
           </footer>
