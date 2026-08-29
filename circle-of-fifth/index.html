@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Circle of Fifths</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    color: #8b949e;
+  }
+  h1 span { color: #58a6ff; font-weight: 600; }
+
+  .subtitle {
+    font-size: 0.85rem;
+    color: #484f58;
+    margin-bottom: 20px;
+  }
+
+  #circle-wrap {
+    position: relative;
+    width: min(90vw, 560px);
+    aspect-ratio: 1;
+  }
+
+  #circle-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .seg {
+    cursor: pointer;
+    transition: opacity 0.25s, filter 0.25s;
+  }
+  .seg:hover { filter: brightness(1.25) drop-shadow(0 0 6px rgba(255,255,255,0.15)); }
+  .seg.dimmed { opacity: 0.35; }
+  .seg.selected { filter: brightness(1.35) drop-shadow(0 0 10px rgba(255,255,255,0.3)); }
+
+  .seg-label {
+    pointer-events: none;
+    user-select: none;
+    font-weight: 700;
+    fill: #fff;
+  }
+  .seg-sub {
+    pointer-events: none;
+    user-select: none;
+    fill: rgba(255,255,255,0.55);
+  }
+  .center-text { pointer-events: none; user-select: none; }
+
+  /* Details panel */
+  #details {
+    width: min(92vw, 580px);
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-top: 18px;
+    min-height: 170px;
+  }
+
+  .det-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .det-key { font-size: 2rem; font-weight: 700; }
+  .det-minor { font-size: 1.1rem; color: #8b949e; }
+  .det-sig { font-size: 0.9rem; color: #8b949e; margin-bottom: 14px; }
+
+  .chord-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chord-pill {
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .chord-pill:hover {
+    background: #30363d;
+    border-color: #58a6ff;
+    transform: translateY(-2px);
+  }
+  .chord-pill .num {
+    display: block;
+    font-size: 0.7rem;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .chord-pill.playing {
+    background: #1f6feb;
+    border-color: #58a6ff;
+  }
+
+  /* Piano */
+  #piano-wrap {
+    width: min(92vw, 580px);
+    margin-top: 18px;
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 12px;
+    padding: 16px 20px 20px;
+  }
+  #piano-label {
+    font-size: 0.8rem;
+    color: #484f58;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  #piano {
+    position: relative;
+    display: flex;
+    height: 110px;
+    user-select: none;
+  }
+  .wkey {
+    flex: 1;
+    background: #e6edf3;
+    border: 1px solid #30363d;
+    border-radius: 0 0 4px 4px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+    font-size: 0.6rem;
+    color: #555;
+  }
+  .wkey:hover { background: #ccc; }
+  .wkey.in-scale { background: #79c0ff; }
+  .wkey.in-scale:hover { background: #58a6ff; }
+  .bkey {
+    position: absolute;
+    width: calc(100% / 14 * 0.6);
+    height: 60%;
+    background: #1c2128;
+    border: 1px solid #000;
+    border-radius: 0 0 3px 3px;
+    cursor: pointer;
+    z-index: 2;
+    transition: background 0.2s;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 4px;
+    font-size: 0.5rem;
+    color: #666;
+  }
+  .bkey:hover { background: #333; }
+  .bkey.in-scale { background: #1f6feb; color: #fff; }
+  .bkey.in-scale:hover { background: #388bfd; }
+
+  .hint {
+    margin-top: 14px;
+    font-size: 0.75rem;
+    color: #30363d;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<h1>Circle of <span>Fifths</span></h1>
+<p class="subtitle">Click a key to explore · click chords &amp; keys to hear them</p>
+
+<div id="circle-wrap">
+  <svg id="circle-svg" viewBox="0 0 600 600"></svg>
+</div>
+
+<div id="details">
+  <div class="det-header">
+    <span class="det-key" id="det-key">C Major</span>
+    <span class="det-minor" id="det-minor">relative: A minor</span>
+  </div>
+  <div class="det-sig" id="det-sig">Key signature: no sharps or flats</div>
+  <div class="chord-row" id="chord-row"></div>
+</div>
+
+<div id="piano-wrap">
+  <div id="piano-label">Scale on piano</div>
+  <div id="piano"></div>
+</div>
+
+<p class="hint">Built with vanilla JS · Web Audio API · no dependencies</p>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────
+const KEYS = [
+  { maj:"C",     min:"A minor",    sig:0,  sigText:"no sharps or flats",   root:60,  scale:[0,2,4,5,7,9,11],  color:"#f0c94a" },
+  { maj:"G",     min:"E minor",    sig:1,  sigText:"1 sharp (F♯)",         root:67,  scale:[7,9,11,0,2,4,6],  color:"#eda63a" },
+  { maj:"D",     min:"B minor",    sig:2,  sigText:"2 sharps (F♯ C♯)",     root:62,  scale:[2,4,6,7,9,11,1],  color:"#e8843c" },
+  { maj:"A",     min:"F♯ minor",   sig:3,  sigText:"3 sharps (F♯ C♯ G♯)",  root:69,  scale:[9,11,1,2,4,6,8],  color:"#e05c50" },
+  { maj:"E",     min:"C♯ minor",   sig:4,  sigText:"4 sharps (F C G D♯)",  root:64,  scale:[4,6,8,9,11,1,3],  color:"#cc4478" },
+  { maj:"B",     min:"G♯ minor",   sig:5,  sigText:"5 sharps (F C G D A♯)",root:71,  scale:[11,1,3,4,6,8,10], color:"#a044b0" },
+  { maj:"F♯/G♭", min:"D♯/E♭ min",  sig:6,  sigText:"6 sharps / 6 flats",   root:66,  scale:[6,8,10,11,1,3,5], color:"#7040a0" },
+  { maj:"D♭",    min:"B♭ minor",   sig:-5, sigText:"5 flats (B E A D G)",  root:61,  scale:[1,3,5,6,8,10,0],  color:"#4860c8" },
+  { maj:"A♭",    min:"F minor",    sig:-4, sigText:"4 flats (B E A D)",    root:68,  scale:[8,10,0,1,3,5,7],  color:"#3088d0" },
+  { maj:"E♭",    min:"C minor",    sig:-3, sigText:"3 flats (B E A)",       root:63,  scale:[3,5,7,8,10,0,2],  color:"#28b0b8" },
+  { maj:"B♭",    min:"G minor",    sig:-2, sigText:"2 flats (B E)",         root:58,  scale:[10,0,2,3,5,7,9],  color:"#38c880" },
+  { maj:"F",     min:"D minor",    sig:-1, sigText:"1 flat (B)",            root:65,  scale:[5,7,9,10,0,2,4],  color:"#68d050" },
+];
+
+// Diatonic triads per key (display names)
+const CHORDS = [
+  ["C","Dm","Em","F","G","Am","B°"],
+  ["G","Am","Bm","C","D","Em","F♯°"],
+  ["D","Em","F♯m","G","A","Bm","C♯°"],
+  ["A","Bm","C♯m","D","E","F♯m","G♯°"],
+  ["E","F♯m","G♯m","A","B","C♯m","D♯°"],
+  ["B","C♯m","D♯m","E","F♯","G♯m","A♯°"],
+  ["F♯","G♯m","A♯m","B","C♯","D♯m","E♯°"],
+  ["D♭","E♭m","Fm","G♭","A♭","B♭m","C°"],
+  ["A♭","B♭m","Cm","D♭","E♭","Fm","G°"],
+  ["E♭","Fm","Gm","A♭","B♭","Cm","D°"],
+  ["B♭","Cm","Dm","E♭","F","Gm","A°"],
+  ["F","Gm","Am","B♭","C","Dm","E°"],
+];
+const ROMAN = ["I","ii","iii","IV","V","vi","vii°"];
+
+// ─── AUDIO ─────────────────────────────────────────────────────────
+let audioCtx = null;
+function ctx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function midiToFreq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+
+function playNote(midi, dur = 1.2) {
+  const c = ctx();
+  const osc = c.createOscillator();
+  const gain = c.createGain();
+  osc.type = "sine";
+  osc.frequency.value = midiToFreq(midi);
+  gain.gain.setValueAtTime(0, c.currentTime);
+  gain.gain.linearRampToValueAtTime(0.18, c.currentTime + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+  osc.connect(gain).connect(c.destination);
+  osc.start(c.currentTime);
+  osc.stop(c.currentTime + dur + 0.05);
+}
+
+function playChord(midis, dur = 1.5) {
+  const c = ctx();
+  midis.forEach((m, i) => {
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = i === 0 ? "triangle" : "sine";
+    osc.frequency.value = midiToFreq(m);
+    const peak = i === 0 ? 0.2 : 0.12;
+    gain.gain.setValueAtTime(0, c.currentTime);
+    gain.gain.linearRampToValueAtTime(peak, c.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+    osc.connect(gain).connect(c.destination);
+    osc.start(c.currentTime + i * 0.01);
+    osc.stop(c.currentTime + dur + 0.1);
+  });
+}
+
+// ─── SVG CIRCLE ────────────────────────────────────────────────────
+const SVG_NS = "http://www.w3.org/2000/svg";
+const CX = 300, CY = 300;
+const RINGS = [
+  { r1: 62,  r2: 138, label: "minor"  },   // inner  – relative minor
+  { r1: 138, r2: 208, label: "sig"    },   // middle – key signature
+  { r1: 208, r2: 290, label: "major"  },   // outer  – major key
+];
+
+function polar(cx, cy, r, angleDeg) {
+  const rad = angleDeg * Math.PI / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function annularSectorPath(cx, cy, r1, r2, a1, a2) {
+  const os = polar(cx, cy, r2, a1);
+  const oe = polar(cx, cy, r2, a2);
+  const ie = polar(cx, cy, r1, a2);
+  const is_ = polar(cx, cy, r1, a1);
+  const large = Math.abs(a2 - a1) > 180 ? 1 : 0;
+  return [
+    `M ${os.x} ${os.y}`,
+    `A ${r2} ${r2} 0 ${large} 1 ${oe.x} ${oe.y}`,
+    `L ${ie.x} ${ie.y}`,
+    `A ${r1} ${r1} 0 ${large} 0 ${is_.x} ${is_.y}`,
+    "Z"
+  ].join(" ");
+}
+
+function buildCircle() {
+  const svg = document.getElementById("circle-svg");
+  svg.innerHTML = "";
+
+  // Defs for glow filter
+  const defs = document.createElementNS(SVG_NS, "defs");
+  defs.innerHTML = `
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>`;
+  svg.appendChild(defs);
+
+  KEYS.forEach((key, i) => {
+    const centerAngle = -90 + i * 30;
+    const a1 = centerAngle - 15;
+    const a2 = centerAngle + 15;
+
+    const g = document.createElementNS(SVG_NS, "g");
+    g.classList.add("seg");
+    g.dataset.index = i;
+    g.setAttribute("fill", key.color);
+
+    // Build all three ring sectors as one path group
+    RINGS.forEach((ring, ri) => {
+      const path = document.createElementNS(SVG_NS, "path");
+      path.setAttribute("d", annularSectorPath(CX, CY, ring.r1, ring.r2, a1, a2));
+      // Slight gap between rings
+      path.setAttribute("stroke", "#0d1117");
+      path.setAttribute("stroke-width", "2");
+      g.appendChild(path);
+    });
+
+    // Text labels
+    const midAngles = centerAngle;
+
+    // Major label (outer ring)
+    const rMaj = (RINGS[2].r1 + RINGS[2].r2) / 2;
+    addSegText(g, CX, CY, rMaj, midAngles, key.maj, "seg-label", 18, "bold");
+
+    // Key-sig label (middle ring)
+    const rSig = (RINGS[1].r1 + RINGS[1].r2) / 2;
+    let sigStr = "";
+    if (key.sig === 0) sigStr = "—";
+    else if (key.sig > 0) sigStr = key.sig + "♯";
+    else sigStr = Math.abs(key.sig) + "♭";
+    addSegText(g, CX, CY, rSig, midAngles, sigStr, "seg-sub", 13, "normal");
+
+    // Minor label (inner ring)
+    const rMin = (RINGS[0].r1 + RINGS[0].r2) / 2;
+    const minShort = key.min.replace(" minor","").replace(" min","");
+    addSegText(g, CX, CY, rMin, midAngles, minShort, "seg-label", 14, "600");
+
+    g.addEventListener("click", () => selectKey(i));
+    svg.appendChild(g);
+  });
+
+  // Center circle
+  const cc = document.createElementNS(SVG_NS, "circle");
+  cc.setAttribute("cx", CX);
+  cc.setAttribute("cy", CY);
+  cc.setAttribute("r", "58");
+  cc.setAttribute("fill", "#161b22");
+  cc.setAttribute("stroke", "#30363d");
+  cc.setAttribute("stroke-width", "2");
+  svg.appendChild(cc);
+
+  // Center text (updated on select)
+  const ct1 = document.createElementNS(SVG_NS, "text");
+  ct1.setAttribute("x", CX);
+  ct1.setAttribute("y", CY - 8);
+  ct1.setAttribute("text-anchor", "middle");
+  ct1.setAttribute("class", "center-text");
+  ct1.setAttribute("fill", "#e6edf3");
+  ct1.setAttribute("font-size", "22");
+  ct1.setAttribute("font-weight", "700");
+  ct1.id = "center-major";
+  ct1.textContent = "C";
+  svg.appendChild(ct1);
+
+  const ct2 = document.createElementNS(SVG_NS, "text");
+  ct2.setAttribute("x", CX);
+  ct2.setAttribute("y", CY + 16);
+  ct2.setAttribute("text-anchor", "middle");
+  ct2.setAttribute("class", "center-text");
+  ct2.setAttribute("fill", "#8b949e");
+  ct2.setAttribute("font-size", "13");
+  ct2.id = "center-minor";
+  ct2.textContent = "A min";
+  svg.appendChild(ct2);
+
+  // Outer decorative ring
+  const outer = document.createElementNS(SVG_NS, "circle");
+  outer.setAttribute("cx", CX);
+  outer.setAttribute("cy", CY);
+  outer.setAttribute("r", "292");
+  outer.setAttribute("fill", "none");
+  outer.setAttribute("stroke", "#21262d");
+  outer.setAttribute("stroke-width", "1");
+  svg.appendChild(outer);
+}
+
+function addSegText(parent, cx, cy, r, angleDeg, text, cls, size, weight) {
+  const pos = polar(cx, cy, r, angleDeg);
+  const t = document.createElementNS(SVG_NS, "text");
+  t.setAttribute("x", pos.x);
+  t.setAttribute("y", pos.y);
+  t.setAttribute("text-anchor", "middle");
+  t.setAttribute("dominant-baseline", "central");
+  t.setAttribute("class", cls);
+  t.setAttribute("font-size", size);
+  t.setAttribute("font-weight", weight);
+
+  // Rotate so text reads radially outward, flipped if upside-down
+  let rot = angleDeg + 90;
+  // Normalize to -180..180
+  while (rot > 180) rot -= 360;
+  while (rot < -180) rot += 360;
+  // If in bottom half (would be upside down), flip
+  if (rot > 90 || rot < -90) {
+    // check if it's actually going to be upside down
+    // rot in (90, 270) or (-270, -90) → upside down
+    if ((rot > 90 && rot < 270) || (rot < -90 && rot > -270)) {
+      rot += 180;
+    }
+  }
+  t.setAttribute("transform", `rotate(${rot}, ${pos.x}, ${pos.y})`);
+  t.textContent = text;
+  parent.appendChild(t);
+}
+
+// ─── SELECT KEY ────────────────────────────────────────────────────
+let selectedIdx = 0;
+
+function selectKey(i) {
+  selectedIdx = i;
+  const key = KEYS[i];
+
+  // Update segment styles
+  document.querySelectorAll(".seg").forEach((seg, si) => {
+    seg.classList.toggle("selected", si === i);
+    seg.classList.toggle("dimmed", si !== i);
+  });
+
+  // Center text
+  document.getElementById("center-major").textContent = key.maj;
+  document.getElementById("center-minor").textContent = key.min.replace(" minor"," min");
+
+  // Details panel
+  document.getElementById("det-key").textContent = key.maj + " Major";
+  document.getElementById("det-minor").textContent = "relative: " + key.min;
+  document.getElementById("det-sig").textContent = "Key signature: " + key.sigText;
+
+  // Chords
+  const row = document.getElementById("chord-row");
+  row.innerHTML = "";
+  CHORDS[i].forEach((chordName, ci) => {
+    const pill = document.createElement("div");
+    pill.className = "chord-pill";
+    pill.innerHTML = `<span class="num">${ROMAN[ci]}</span>${chordName}`;
+
+    // Compute MIDI notes for this triad
+    const rootMidi = key.root;
+    const scaleDeg = ci; // 0=I, 1=ii, 2=iii, 3=IV, 4=V, 5=vi, 6=vii
+    const scaleIntervals = [0, 2, 4, 5, 7, 9, 11]; // major scale
+    const triadOffsets = [
+      [0, 4, 7],   // I   major
+      [0, 3, 7],   // ii  minor
+      [0, 3, 7],   // iii minor
+      [0, 4, 7],   // IV  major
+      [0, 4, 7],   // V   major
+      [0, 3, 7],   // vi  minor
+      [0, 3, 6],   // vii diminished
+    ];
+    const chordRootMidi = rootMidi + scaleIntervals[scaleDeg];
+    const notes = triadOffsets[ci].map(off => chordRootMidi + off);
+
+    pill.addEventListener("click", (e) => {
+      e.stopPropagation();
+      playChord(notes, 1.8);
+      pill.classList.add("playing");
+      setTimeout(() => pill.classList.remove("playing"), 600);
+    });
+
+    row.appendChild(pill);
+  });
+
+  // Update piano
+  updatePiano(key.scale);
+
+  // Play root
+  playNote(key.root, 1.0);
+}
+
+// ─── PIANO ─────────────────────────────────────────────────────────
+const NOTE_NAMES = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
+const WHITE_KEYS = [0,2,4,5,7,9,11]; // pitch classes for white keys
+const BLACK_AFTER = { 0:1, 2:3, 5:6, 7:8, 9:10 }; // white PC → black PC after it
+
+function buildPiano() {
+  const piano = document.getElementById("piano");
+  piano.innerHTML = "";
+
+  // 2 octaves + final C = 14 white keys
+  const whiteSeq = [0,2,4,5,7,9,11, 0,2,4,5,7,9,11, 0];
+  const totalWhite = whiteSeq.length;
+  const wWidth = 100 / totalWhite; // percent
+
+  whiteSeq.forEach((pc, i) => {
+    const w = document.createElement("div");
+    w.className = "wkey";
+    w.dataset.pc = pc;
+    w.textContent = "CDEFGAB"[WHITE_KEYS.indexOf(pc)] || "";
+    // Better label
+    const noteName = NOTE_NAMES[pc];
+    w.textContent = noteName;
+    w.style.fontSize = "0.55rem";
+    w.addEventListener("click", () => {
+      playNote(60 + pc + (i >= 7 ? 12 : 0), 0.8);
+    });
+    piano.appendChild(w);
+
+    // Black key after this white key?
+    if (BLACK_AFTER.hasOwnProperty(pc) && i < totalWhite - 1) {
+      const bpc = BLACK_AFTER[pc];
+      const b = document.createElement("div");
+      b.className = "bkey";
+      b.dataset.pc = bpc;
+      b.textContent = NOTE_NAMES[bpc];
+      b.style.left = `calc(${(i + 1) * wWidth}% - ${wWidth * 0.3}%)`;
+      b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        playNote(60 + bpc + (i >= 7 ? 12 : 0), 0.8);
+      });
+      piano.appendChild(b);
+    }
+  });
+}
+
+function updatePiano(scaleSet) {
+  const scaleSetArr = new Set(scaleSet);
+  document.querySelectorAll(".wkey, .bkey").forEach(el => {
+    const pc = parseInt(el.dataset.pc);
+    el.classList.toggle("in-scale", scaleSetArr.has(pc));
+  });
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────
+buildCircle();
+buildPiano();
+selectKey(0);
+</script>
+</body>
+</html>
