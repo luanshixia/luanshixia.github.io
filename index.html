@@ -309,6 +309,14 @@
       },
     ];
 
+    const TOOLS = [
+      { name: "eMind2",           desc: "Markdown bullet list → interactive mind map or tree, with SVG export.", href: "emind2/",                tag: "Visualization", icon: "🧠" },
+      { name: "eMind3",           desc: "Mind mapping with a saved library — manage and revisit multiple maps.", href: "emind3/",                tag: "Visualization", icon: "🗂️" },
+      { name: "3D Earth Globe",   desc: "Drag-to-rotate, scroll-to-zoom textured globe built with three.js.",   href: "globe3d/",               tag: "3D",            icon: "🌍" },
+      { name: "SciCalc",          desc: "Scientific calculator with calculation history and a function grapher.", href: "scientific-calculator/", tag: "Math",          icon: "🧮" },
+      { name: "Circle of Fifths", desc: "Interactive music theory tool with a virtual piano and chord playback.", href: "circle-of-fifth/",       tag: "Music",         icon: "🎹" },
+    ];
+
     const DEMOS = [
       { name: "Mind Map",         desc: "Interactive mind-mapping canvas",    href: "archive/demos/mindmap.html",          tag: "Visualization", icon: "🧠" },
       { name: "Fast Read",        desc: "Speed-reading trainer using RSVP",   href: "archive/demos/fastread.html",         tag: "Productivity",  icon: "⚡" },
@@ -334,6 +342,8 @@
       "Physics":          "bg-yellow-500/15 text-yellow-300 border-yellow-500/25",
       "Data":             "bg-red-500/15 text-red-300 border-red-500/25",
       "Dev":              "bg-indigo-500/15 text-indigo-300 border-indigo-500/25",
+      "3D":               "bg-lime-500/15 text-lime-300 border-lime-500/25",
+      "Math":             "bg-teal-500/15 text-teal-300 border-teal-500/25",
       "Performance":      "bg-amber-500/15 text-amber-300 border-amber-500/25",
       "Cost Optimization":"bg-green-500/15 text-green-300 border-green-500/25",
       "Reliability":      "bg-sky-500/15 text-sky-300 border-sky-500/25",
@@ -616,6 +626,7 @@
                 <NavLink href="#about">About</NavLink>
                 <NavLink href="#experience">Experience</NavLink>
                 <NavLink href="#projects">Projects</NavLink>
+                <NavLink href="#tools">Tools</NavLink>
                 <NavLink href="https://www.linkedin.com/in/yangw3/" external>
                   <span className="flex items-center gap-1.5">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -801,6 +812,21 @@
               <div className="grid sm:grid-cols-2 gap-4">
                 {PROF_PROJECTS.map(p => (
                   <ProfProjectCard key={p.name} project={p} />
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ── Tools ── */}
+          <section id="tools" className="py-24 px-6">
+            <div className="max-w-5xl mx-auto">
+              <SectionHeader num="04" title="Tools" />
+              <p className="text-gray-500 mb-12 -mt-6 ml-10">
+                Small browser-based tools and experiments, free to use.
+              </p>
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {TOOLS.map(t => (
+                  <DemoCard key={t.name} project={t} />
                 ))}
               </div>
             </div>
