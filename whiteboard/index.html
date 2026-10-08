@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whiteboard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f0f2f5;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 16px;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e3e8;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    flex-wrap: wrap;
+    z-index: 10;
+  }
+
+  .toolbar .group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toolbar .divider {
+    width: 1px;
+    height: 28px;
+    background: #e0e3e8;
+  }
+
+  .swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .swatch:hover { transform: scale(1.15); }
+  .swatch.active { border-color: #2563eb; box-shadow: 0 0 0 2px #bfdbfe; }
+
+  button {
+    padding: 7px 14px;
+    border: 1px solid #d5d9e0;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    transition: background 0.1s;
+  }
+  button:hover { background: #f3f4f6; }
+  button.tool.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+  button:disabled { opacity: 0.4; cursor: default; }
+
+  input[type="range"] {
+    width: 110px;
+    accent-color: #2563eb;
+  }
+
+  .size-preview {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .size-preview .dot {
+    border-radius: 50%;
+    background: #374151;
+  }
+
+  .label { font-size: 12px; color: #6b7280; }
+
+  #canvas-wrap {
+    flex: 1;
+    position: relative;
+  }
+  #canvas {
+    display: block;
+    background: #ffffff;
+    touch-action: none;
+    cursor: crosshair;
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="group">
+    <button class="tool active" data-tool="pen" title="Pen (P)">✏️ Pen</button>
+    <button class="tool" data-tool="eraser" title="Eraser (E)">🧽 Eraser</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="group" id="colors"></div>
+
+  <div class="divider"></div>
+
+  <div class="group">
+    <span class="label">Size</span>
+    <input type="range" id="size" min="1" max="60" value="4">
+    <span class="size-preview"><span class="dot" id="dot"></span></span>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="group">
+    <button id="undo" title="Undo (Ctrl/Cmd+Z)">↩ Undo</button>
+    <button id="clear" title="Clear everything">🗑 Clear</button>
+  </div>
+</div>
+
+<div id="canvas-wrap">
+  <canvas id="canvas"></canvas>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const wrap = document.getElementById('canvas-wrap');
+
+  const COLORS = ['#000000', '#ef4444', '#f59e0b', '#22c55e', '#2563eb', '#a855f7', '#ec4899'];
+
+  let tool = 'pen';
+  let color = '#000000';
+  let size = 4;
+  let drawing = false;
+  let last = null;
+  let undoStack = [];   // each entry: an ImageData snapshot
+  const MAX_UNDO = 25;
+
+  // ---- Canvas sizing (fill window, keep drawing on resize) ----
+  function resize() {
+    const snap = canvas.width > 0 ? canvas.toDataURL() : null;
+    canvas.width = wrap.clientWidth;
+    canvas.height = wrap.clientHeight;
+    if (snap) {
+      const img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0);
+      img.src = snap;
+    } else {
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ---- Color swatches ----
+  const colorsEl = document.getElementById('colors');
+  COLORS.forEach((c, i) => {
+    const b = document.createElement('button');
+    b.className = 'swatch' + (i === 0 ? ' active' : '');
+    b.style.background = c;
+    b.title = c;
+    b.addEventListener('click', () => {
+      color = c;
+      tool = 'pen';
+      syncUI();
+      colorsEl.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+      b.classList.add('active');
+    });
+    colorsEl.appendChild(b);
+  });
+
+  // ---- Size slider ----
+  const sizeInput = document.getElementById('size');
+  const dot = document.getElementById('dot');
+  function updateDot() {
+    const d = Math.max(2, Math.min(size, 26));
+    dot.style.width = d + 'px';
+    dot.style.height = d + 'px';
+  }
+  sizeInput.addEventListener('input', () => { size = +sizeInput.value; updateDot(); });
+  updateDot();
+
+  // ---- Tool buttons ----
+  const toolBtns = document.querySelectorAll('.tool');
+  toolBtns.forEach(b => b.addEventListener('click', () => {
+    tool = b.dataset.tool;
+    syncUI();
+  }));
+
+  function syncUI() {
+    toolBtns.forEach(b => b.classList.toggle('active', b.dataset.tool === tool));
+  }
+
+  // ---- Undo ----
+  const undoBtn = document.getElementById('undo');
+  function pushUndo() {
+    undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    if (undoStack.length > MAX_UNDO) undoStack.shift();
+    undoBtn.disabled = false;
+  }
+  function undo() {
+    const snap = undoStack.pop();
+    if (snap) ctx.putImageData(snap, 0, 0);
+    undoBtn.disabled = undoStack.length === 0;
+  }
+  undoBtn.disabled = true;
+  undoBtn.addEventListener('click', undo);
+
+  // ---- Clear ----
+  document.getElementById('clear').addEventListener('click', () => {
+    if (!confirm('Clear the whole whiteboard?')) return;
+    pushUndo();
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  });
+
+  // ---- Drawing ----
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    pushUndo();
+    drawing = true;
+    last = getPos(e);
+    drawStroke(last, last); // dot for a click
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!drawing) return;
+    const p = getPos(e);
+    drawStroke(last, p);
+    last = p;
+  });
+
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev =>
+    canvas.addEventListener(ev, () => { drawing = false; last = null; })
+  );
+
+  function drawStroke(from, to) {
+    ctx.beginPath();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (tool === 'eraser') {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.strokeStyle = 'rgba(0,0,0,1)';
+      ctx.lineWidth = size * 3; // eraser is a bit bigger
+    } else {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = size;
+    }
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.stroke();
+  }
+
+  // ---- Keyboard shortcuts ----
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      undo();
+    } else if (e.key.toLowerCase() === 'p') {
+      tool = 'pen'; syncUI();
+    } else if (e.key.toLowerCase() === 'e') {
+      tool = 'eraser'; syncUI();
+    }
+  });
+})();
+</script>
+</body>
+</html>
