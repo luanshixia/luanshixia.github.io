@@ -47,6 +47,7 @@
     border: 2px solid transparent;
     cursor: pointer;
     transition: transform 0.1s;
+    padding: 0;
   }
   .swatch:hover { transform: scale(1.15); }
   .swatch.active { border-color: #2563eb; box-shadow: 0 0 0 2px #bfdbfe; }
@@ -64,6 +65,8 @@
   }
   button:hover { background: #f3f4f6; }
   button.tool.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+  button.primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+  button.primary:hover { background: #1d4ed8; }
   button:disabled { opacity: 0.4; cursor: default; }
 
   input[type="range"] {
@@ -84,6 +87,13 @@
   }
 
   .label { font-size: 12px; color: #6b7280; }
+
+  .save-status {
+    font-size: 12px;
+    color: #9ca3af;
+    min-width: 70px;
+  }
+  .save-status.saved { color: #16a34a; }
 
   #canvas-wrap {
     flex: 1;
@@ -107,6 +117,14 @@
 
   <div class="divider"></div>
 
+  <div class="group">
+    <button class="tool" data-tool="line" title="Line (L)">╱ Line</button>
+    <button class="tool" data-tool="rect" title="Rectangle (R)">▭ Rect</button>
+    <button class="tool" data-tool="circle" title="Circle (C)">◯ Circle</button>
+  </div>
+
+  <div class="divider"></div>
+
   <div class="group" id="colors"></div>
 
   <div class="divider"></div>
@@ -122,7 +140,10 @@
   <div class="group">
     <button id="undo" title="Undo (Ctrl/Cmd+Z)">↩ Undo</button>
     <button id="clear" title="Clear everything">🗑 Clear</button>
+    <button id="export" class="primary" title="Download as PNG">⬇ Export</button>
   </div>
+
+  <div class="save-status" id="saveStatus"></div>
 </div>
 
 <div id="canvas-wrap">
@@ -134,15 +155,19 @@
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
   const wrap = document.getElementById('canvas-wrap');
+  const saveStatus = document.getElementById('saveStatus');
 
   const COLORS = ['#000000', '#ef4444', '#f59e0b', '#22c55e', '#2563eb', '#a855f7', '#ec4899'];
+  const LS_KEY = 'whiteboard:canvas';
 
   let tool = 'pen';
   let color = '#000000';
   let size = 4;
   let drawing = false;
-  let last = null;
-  let undoStack = [];   // each entry: an ImageData snapshot
+  let last = null;          // pen/eraser: previous point
+  let shapeStart = null;    // shapes: start point
+  let shapeSnapshot = null; // ImageData captured at shape start (for live preview)
+  let undoStack = [];       // each entry: an ImageData snapshot
   const MAX_UNDO = 25;
 
   // ---- Canvas sizing (fill window, keep drawing on resize) ----
@@ -158,9 +183,42 @@
       ctx.fillStyle = '#fff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
+    save();
   }
+
+  // ---- LocalStorage persistence ----
+  function save() {
+    try {
+      saveStatus.textContent = 'Saving…';
+      saveStatus.className = 'save-status';
+      localStorage.setItem(LS_KEY, canvas.toDataURL('image/png'));
+      saveStatus.textContent = '✓ Saved';
+      saveStatus.className = 'save-status saved';
+      setTimeout(() => {
+        if (saveStatus.textContent === '✓ Saved') saveStatus.textContent = '';
+      }, 1500);
+    } catch (err) {
+      saveStatus.textContent = 'Save failed';
+      saveStatus.className = 'save-status';
+    }
+  }
+
+  function restore() {
+    const saved = localStorage.getItem(LS_KEY);
+    if (!saved) return;
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      saveStatus.textContent = 'Restored';
+      saveStatus.className = 'save-status saved';
+      setTimeout(() => { saveStatus.textContent = ''; }, 1500);
+    };
+    img.src = saved;
+  }
+
+  resize();  // size + paint white (first run saves the blank board)
+  restore(); // overlay any previously saved drawing
   window.addEventListener('resize', resize);
-  resize();
 
   // ---- Color swatches ----
   const colorsEl = document.getElementById('colors');
@@ -212,6 +270,7 @@
     const snap = undoStack.pop();
     if (snap) ctx.putImageData(snap, 0, 0);
     undoBtn.disabled = undoStack.length === 0;
+    save();
   }
   undoBtn.disabled = true;
   undoBtn.addEventListener('click', undo);
@@ -222,6 +281,15 @@
     pushUndo();
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    save();
+  });
+
+  // ---- Export as PNG ----
+  document.getElementById('export').addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.download = 'whiteboard-' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-') + '.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
   });
 
   // ---- Drawing ----
@@ -230,28 +298,7 @@
     return { x: e.clientX - r.left, y: e.clientY - r.top };
   }
 
-  canvas.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    canvas.setPointerCapture(e.pointerId);
-    pushUndo();
-    drawing = true;
-    last = getPos(e);
-    drawStroke(last, last); // dot for a click
-  });
-
-  canvas.addEventListener('pointermove', (e) => {
-    if (!drawing) return;
-    const p = getPos(e);
-    drawStroke(last, p);
-    last = p;
-  });
-
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev =>
-    canvas.addEventListener(ev, () => { drawing = false; last = null; })
-  );
-
-  function drawStroke(from, to) {
-    ctx.beginPath();
+  function applyStrokeStyle() {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     if (tool === 'eraser') {
@@ -263,20 +310,81 @@
       ctx.strokeStyle = color;
       ctx.lineWidth = size;
     }
-    ctx.moveTo(from.x, from.y);
-    ctx.lineTo(to.x, to.y);
+  }
+
+  function drawShape(from, to) {
+    applyStrokeStyle();
+    ctx.beginPath();
+    if (tool === 'line') {
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+    } else if (tool === 'rect') {
+      ctx.rect(Math.min(from.x, to.x), Math.min(from.y, to.y),
+               Math.abs(to.x - from.x), Math.abs(to.y - from.y));
+    } else if (tool === 'circle') {
+      const rx = Math.abs(to.x - from.x) / 2;
+      const ry = Math.abs(to.y - from.y) / 2;
+      ctx.ellipse((from.x + to.x) / 2, (from.y + to.y) / 2, rx, ry, 0, 0, Math.PI * 2);
+    }
     ctx.stroke();
   }
+
+  const isShape = () => ['line', 'rect', 'circle'].includes(tool);
+
+  canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    pushUndo();
+    drawing = true;
+    const p = getPos(e);
+    if (isShape()) {
+      shapeStart = p;
+      shapeSnapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    } else {
+      last = p;
+      applyStrokeStyle();
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x + 0.01, p.y + 0.01); // dot for a click
+      ctx.stroke();
+    }
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!drawing) return;
+    const p = getPos(e);
+    if (isShape()) {
+      ctx.putImageData(shapeSnapshot, 0, 0); // clear preview, redraw shape
+      drawShape(shapeStart, p);
+    } else if (tool === 'pen' || tool === 'eraser') {
+      applyStrokeStyle();
+      ctx.beginPath();
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      last = p;
+    }
+  });
+
+  function endStroke() {
+    if (!drawing) return;
+    drawing = false;
+    last = null;
+    shapeStart = null;
+    shapeSnapshot = null;
+    save();
+  }
+  ['pointerup', 'pointercancel'].forEach(ev => canvas.addEventListener(ev, endStroke));
 
   // ---- Keyboard shortcuts ----
   window.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
       e.preventDefault();
       undo();
-    } else if (e.key.toLowerCase() === 'p') {
-      tool = 'pen'; syncUI();
-    } else if (e.key.toLowerCase() === 'e') {
-      tool = 'eraser'; syncUI();
+    } else if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+      const map = { p: 'pen', e: 'eraser', l: 'line', r: 'rect', c: 'circle' };
+      const t = map[e.key.toLowerCase()];
+      if (t) { tool = t; syncUI(); }
     }
   });
 })();
