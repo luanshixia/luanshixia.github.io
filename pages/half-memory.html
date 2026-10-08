@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #0a0a0f; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<script>
+// ─── TUNE THESE ───────────────────────────────────────────
+const NUM_PARTICLES   = 3000;
+const FADE_ALPHA      = 12;      // lower = longer trails
+const NOISE_SCALE     = 0.003;   // flow field zoom
+const NOISE_SPEED     = 0.002;   // how fast the field morphs
+const MOUSE_INFLUENCE = 120;     // px radius of mouse warp
+const PALETTE = [
+  [255,  90,  60],  // hot coral
+  [255, 170,  50],  // amber
+  [120, 210, 255],  // ice blue
+  [180, 120, 255],  // soft violet
+  [ 60, 255, 180],  // mint
+];
+// ──────────────────────────────────────────────────────────
+
+let particles = [];
+let t = 0;
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = random(width);
+    this.y = random(height);
+    this.px = this.x;
+    this.py = this.y;
+    this.speed = random(0.5, 2.5);
+    this.life = random(100, 400);
+    this.col = random(PALETTE);
+    this.alpha = random(40, 160);
+  }
+  update() {
+    this.px = this.x;
+    this.py = this.y;
+
+    // base flow-field angle from evolving Perlin noise
+    let angle = noise(this.x * NOISE_SCALE, this.y * NOISE_SCALE, t) * TAU * 2;
+
+    // mouse warps the local field
+    let d = dist(this.x, this.y, mouseX, mouseY);
+    if (d < MOUSE_INFLUENCE) {
+      let strength = (1 - d / MOUSE_INFLUENCE);
+      let toMouse = atan2(mouseY - this.y, mouseX - this.x);
+      angle = lerp(angle, toMouse, strength * 0.8);
+      // slight repulsion so particles don't pile up on cursor
+      this.x += cos(toMouse + HALF_PI) * strength * 1.5;
+      this.y += sin(toMouse + HALF_PI) * strength * 1.5;
+    }
+
+    this.x += cos(angle) * this.speed;
+    this.y += sin(angle) * this.speed;
+    this.life--;
+
+    if (this.life <= 0 || this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+      this.reset();
+    }
+  }
+  draw() {
+    let speed = dist(this.x, this.y, this.px, this.py);
+    // map speed → index into palette for subtle color shift
+    let ci = constrain(floor(map(speed, 0, 5, 0, PALETTE.length - 1)), 0, PALETTE.length - 1);
+    let c = lerpColor(color(PALETTE[ci]), color(PALETTE[(ci + 1) % PALETTE.length]),
+                       (speed - floor(map(speed, 0, 5, 0, PALETTE.length))) );
+    c.setAlpha(this.alpha * map(this.life, 0, 400, 0.3, 1));
+    stroke(c);
+    strokeWeight(1.2);
+    line(this.px, this.py, this.x, this.y);
+  }
+}
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  background(10, 10, 15);
+  for (let i = 0; i < NUM_PARTICLES; i++) particles.push(new Particle());
+}
+
+function draw() {
+  // fading trail
+  noStroke();
+  fill(10, 10, 15, FADE_ALPHA);
+  rect(0, 0, width, height);
+
+  t += NOISE_SPEED;
+  for (let p of particles) { p.update(); p.draw(); }
+}
+
+function windowResized() { resizeCanvas(windowWidth, windowHeight); }
+
+// click = burst-reset all particles
+function mousePressed() { for (let p of particles) p.reset(); }
+</script>
+</body>
+</html>
